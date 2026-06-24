@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-agri-bg-light text-gray-800 font-sans transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-agri-bg-dark text-gray-100;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-agri-green-deep font-semibold tracking-tight;
+  }
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-agri-green-light;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-agri-green text-white rounded-lg hover:bg-agri-green-dark transition-all duration-200 shadow-md hover:shadow-lg focus:ring-2 focus:ring-agri-green-light focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply px-4 py-2 bg-agri-earth text-white rounded-lg hover:bg-agri-earth-dark transition-all duration-200 shadow-md hover:shadow-lg focus:ring-2 focus:ring-agri-earth-light focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-outline {
+    @apply px-4 py-2 border-2 border-agri-green text-agri-green-dark rounded-lg hover:bg-agri-green-light transition-all duration-200 focus:ring-2 focus:ring-agri-green focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .dark .btn-outline {
+    @apply text-agri-green-light hover:bg-agri-green-deep border-agri-green-light;
+  }
+  .card {
+    @apply bg-white dark:bg-agri-bg-darkSurface rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-800 transition-all duration-300 hover:shadow-lg;
+  }
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-green focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white transition-all duration-200 outline-none;
+  }
+  .label-text {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-agri-bg-darkSurface/70 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-xl;
+  }
+}
