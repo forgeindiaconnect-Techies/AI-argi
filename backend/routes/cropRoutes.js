@@ -1,7 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getCrops, createCrop, updateCrop, deleteCrop } = require('../controllers/cropController');
+const {
+  getCrops,
+  createCrop,
+  updateCrop,
+  deleteCrop,
+  getCropRecommendation
+} = require('../controllers/cropController');
 const { protect, admin } = require('../middleware/authMiddleware');
+router.get('/recommend', getCropRecommendation);
 
 router.route('/')
   .get(getCrops)
