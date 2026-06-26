@@ -5,6 +5,11 @@ const User = require('./models/User');
 const Soil = require('./models/Soil');
 const connectDB = require('./config/db');
 
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+} catch (e) {}
+
 dotenv.config();
 connectDB();
 
