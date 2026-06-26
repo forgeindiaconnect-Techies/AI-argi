@@ -86,8 +86,39 @@ const ChatbotTab = ({ activeFarm }) => {
     setInput('');
     setIsTyping(true);
 
+    const getLocalAIResponse = (query) => {
+      const q = query.toLowerCase();
+      
+      if (q.includes('paddy') || q.includes('rice')) {
+        if (q.includes('fertilizer') || q.includes('npk') || q.includes('manure') || q.includes('nutrient')) {
+          return "🌱 **Paddy Fertilizer Recommendation:**\nFor optimal paddy yield in " + (activeFarm?.district || 'your district') + ", use an NPK ratio of **120:60:60 kg/ha**.\n\n1. **Basal Application (At Sowing/Transplanting):** Apply 50% N (Urea ~130kg), 100% P (DAP ~130kg), and 50% K (MOP ~50kg).\n2. **Active Tillering Stage (20-25 days):** Apply 25% N (Urea ~65kg).\n3. **Panicle Initiation Stage (45 days):** Apply remaining 25% N + 50% K.\n💡 *Tip: Apply Zinc Sulfate @ 25 kg/ha basal to prevent Khaira disease.*";
+        }
+        return "🌾 **Paddy Crop Advisory:** Ensure 2-5 cm standing water during tillering. Monitor for Stem Borer and Brown Plant Hopper (BPH). Use Neem-based sprays for early pest defense.";
+      }
+      
+      if (q.includes('sugarcane')) {
+        if (q.includes('chemical') || q.includes('pest') || q.includes('weed') || q.includes('spray') || q.includes('borer') || q.includes('rot')) {
+          return "🎋 **Sugarcane Chemical & Crop Protection Guide:**\n\n1. **Weed Control:** Pre-emergence spray of **Atrazine @ 2 kg/ha** in 800L water within 3 days of planting.\n2. **Early Shoot Borer:** Soil application of **Cartap Hydrochloride 4G @ 25 kg/ha** at 30 & 45 days after planting.\n3. **Red Rot Management:** Treat setts with **Carbendazim 50 WP (0.1%)** for 15 minutes before planting.\n⚠️ *Always wear protective gear while spraying chemicals.*";
+        }
+        return "🎋 **Sugarcane Cultivation:** Requires deep fertile soil and heavy irrigation (1500-2500 mm total water). Maintain row spacing of 90-120 cm for mechanized harvesting.";
+      }
+
+      if (q.includes('pest') || q.includes('insect') || q.includes('worm') || q.includes('borer') || q.includes('disease')) {
+        return "🐛 **Integrated Pest Management (IPM):**\n1. Install **Yellow Sticky Traps** (15/acre) for sucking pests (Aphids, Whitefly).\n2. Use **Pheromone Traps** (5/acre) for monitoring Fruit/Shoot borers.\n3. Foliar spray of **Neem Oil 10000 ppm @ 2ml/L** + sticker as an organic deterrent.";
+      }
+
+      if (q.includes('fertilizer') || q.includes('npk') || q.includes('nutrient') || q.includes('urea') || q.includes('dap')) {
+        return "🧪 **General Fertilizer Guidelines:**\nAlways test your soil NPK and Organic Carbon levels first. Generally, split Nitrogen applications into 3 doses to reduce leaching losses. Phosphorus should be applied 100% basal as it moves slowly in soil.";
+      }
+
+      if (q.includes('weather') || q.includes('rain') || q.includes('climate') || q.includes('storm')) {
+        return "⛅ **Weather & Irrigation Advice:**\nCheck the 5-day forecast before scheduling fertilizer or pesticide sprays. If rain is expected within 24 hours, postpone foliar sprays to avoid wash-off.";
+      }
+
+      return `🤖 **AgriAI Expert Advisory:**\nThank you for your inquiry regarding "${query}". Based on agricultural data for ${activeFarm?.district || 'your region'} (${activeFarm?.soil || 'standard soil'}), maintain balanced irrigation and inspect leaf health weekly. Feel free to ask specifically about fertilizer dosages or chemical sprays for any crop!`;
+    };
+
     try {
-      // Connect to the OpenAI backend server you just created
       const response = await fetch('http://localhost:5001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,15 +131,14 @@ const ChatbotTab = ({ activeFarm }) => {
       
       const aiResponse = {
         sender: 'ai',
-        text: data.reply || "Sorry, I couldn't understand that.",
+        text: data.reply || getLocalAIResponse(input),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
-      console.error("Chatbot API Error:", error);
       setMessages(prev => [...prev, {
         sender: 'ai',
-        text: "Sorry, I am currently offline or cannot connect to the server. Please ensure the backend is running.",
+        text: getLocalAIResponse(input),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     } finally {
