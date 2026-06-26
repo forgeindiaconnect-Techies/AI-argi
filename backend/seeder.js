@@ -14,18 +14,18 @@ const importData = async () => {
     await Soil.deleteMany();
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('password123', salt);
+    const hashedPassword = await bcrypt.hash('arun123', salt);
 
     // 1. Create Default Users
     const users = await User.insertMany([
       {
-        name: 'System Admin',
+        name: 'Admin Arun',
         email: 'admin@sams.com',
         password: hashedPassword,
         role: 'Admin',
       },
       {
-        name: 'John Farmer',
+        name: 'Farmer Arun',
         email: 'farmer@sams.com',
         password: hashedPassword,
         role: 'Farmer',
