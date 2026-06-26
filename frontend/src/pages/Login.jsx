@@ -97,11 +97,6 @@ const Login = () => {
           Don't have an account? <Link to="/register" className="text-agri-green hover:underline">Register here</Link>
         </p>
 
-        <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-xs text-gray-500 text-center">
-          <p className="font-semibold mb-1">Demo Credentials</p>
-          <p>Admin: <span className="font-mono">admin@sams.com</span> / <span className="font-mono">password123</span></p>
-          <p>Farmer: <span className="font-mono">farmer@sams.com</span> / <span className="font-mono">password123</span></p>
-        </div>
       </div>
     </div>
   );
