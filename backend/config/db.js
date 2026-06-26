@@ -6,7 +6,9 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
-    process.exit(1);
+    console.error('Please check your MONGODB_URI environment variable in the Render dashboard.');
+    // Don't exit - let the server stay alive so health checks pass
+    // Requests will fail gracefully with 500 errors instead of crashing
   }
 };
 
