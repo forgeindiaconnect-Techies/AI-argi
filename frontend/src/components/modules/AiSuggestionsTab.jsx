@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, RefreshCw, MapPin, Activity, ShieldAlert, Sprout, Calendar, Sun, Wind, Droplets, TrendingUp, IndianRupee, Lightbulb, AlertTriangle, Bug, FileText, Map, Eye, X, Clock } from 'lucide-react';
 
 const STORAGE_KEY = 'sams_ai_reports';
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://ai-argi.onrender.com";
 
 const generateReport = (farm, apiData) => {
   const farmArea = parseFloat(farm.area) || 1;
