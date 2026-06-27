@@ -5,12 +5,12 @@ const STORAGE_KEY = 'sams_ai_reports';
 
 const generateReport = (farm) => {
   const area = parseFloat(farm.area) || 1;
-  const season = farm.season || 'Summer';
+  const season = farm.season || 'Rabi';
   const soil = farm.soil || 'Red Soil';
   const water = farm.water || 'Medium';
   const district = farm.district || farm.location || 'Unknown';
 
-  const cropMap = { Summer: 'Groundnut', Monsoon: 'Paddy', Kharif: 'Paddy', Winter: 'Wheat', Rabi: 'Wheat', Zaid: 'Groundnut' };
+  const cropMap = { Summer: 'Groundnut', Monsoon: 'Paddy', Kharif: 'Paddy', Winter: 'Wheat', Rabi: 'Wheat', Zaid: 'Groundnut', 'Whole Year': 'Sugarcane', 'Whole year': 'Sugarcane' };
   const bestCrop = cropMap[season] || 'Groundnut';
   const yieldPerAcre = 1000;
   const pricePerKg = 80;

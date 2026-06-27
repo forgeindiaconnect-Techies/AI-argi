@@ -8,7 +8,7 @@ const tnDistricts = [
 ];
 
 const soilTypes = ["Red Soil", "Black Soil", "Alluvial Soil", "Sandy Soil", "Laterite Soil", "Mountain Soil"];
-const seasonTypes = ["Kharif", "Rabi", "Zaid"];
+const seasonTypes = ["Rabi", "Kharif", "Whole Year"];
 const waterAvailabilities = ["Low", "Medium", "High"];
 
 const AiCropAdvisorTab = ({ activeFarm }) => {
@@ -43,7 +43,7 @@ const AiCropAdvisorTab = ({ activeFarm }) => {
       setFormData({
         district: activeFarm.district || '',
         soil: activeFarm.soil || '',
-        season: ['Kharif', 'Rabi', 'Zaid'].includes(activeFarm.season) ? activeFarm.season : 'Kharif',
+        season: ['Rabi', 'Kharif', 'Whole Year'].includes(activeFarm.season) ? activeFarm.season : 'Rabi',
         area: activeFarm.area || '',
         water: activeFarm.water || ''
       });
@@ -80,11 +80,11 @@ const AiCropAdvisorTab = ({ activeFarm }) => {
       
       const newReport = {
         recommendations: [
-          { rank: 1, badge: "🥇 First Preference", color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/30", name: formData.season === 'Kharif' ? 'Paddy' : (formData.season === 'Rabi' ? 'Wheat' : 'Groundnut'), suitabilityScore: 95, yieldPerAcre: 1000, revenue: 800000, profit: 480000, confidence: 'Very High', risk: 'Low' },
-          { rank: 2, badge: "🥈 Second Preference", color: "text-gray-300", bg: "bg-gray-300/10", border: "border-gray-300/30", name: formData.season === 'Kharif' ? 'Sugarcane' : (formData.season === 'Rabi' ? 'Mustard' : 'Cotton'), suitabilityScore: 90, yieldPerAcre: 850, revenue: 700000, profit: 410000, confidence: 'High', risk: 'Medium' },
-          { rank: 3, badge: "🥉 Third Preference", color: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30", name: formData.season === 'Kharif' ? 'Groundnut' : (formData.season === 'Rabi' ? 'Barley' : 'Maize'), suitabilityScore: 85, yieldPerAcre: 700, revenue: 550000, profit: 350000, confidence: 'Medium', risk: 'Low' }
+          { rank: 1, badge: "🥇 First Preference", color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/30", name: formData.season === 'Kharif' ? 'Paddy' : (formData.season === 'Rabi' ? 'Wheat' : 'Sugarcane'), suitabilityScore: 95, yieldPerAcre: 1000, revenue: 800000, profit: 480000, confidence: 'Very High', risk: 'Low' },
+          { rank: 2, badge: "🥈 Second Preference", color: "text-gray-300", bg: "bg-gray-300/10", border: "border-gray-300/30", name: formData.season === 'Kharif' ? 'Groundnut' : (formData.season === 'Rabi' ? 'Mustard' : 'Banana'), suitabilityScore: 90, yieldPerAcre: 850, revenue: 700000, profit: 410000, confidence: 'High', risk: 'Medium' },
+          { rank: 3, badge: "🥉 Third Preference", color: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30", name: formData.season === 'Kharif' ? 'Maize' : (formData.season === 'Rabi' ? 'Barley' : 'Tapioca'), suitabilityScore: 85, yieldPerAcre: 700, revenue: 550000, profit: 350000, confidence: 'Medium', risk: 'Low' }
         ],
-        bestCrop: { name: formData.season === 'Kharif' ? 'Paddy' : (formData.season === 'Rabi' ? 'Wheat' : 'Groundnut'), suitabilityScore: 95, confidence: 'Very High', riskLevel: 'Low' },
+        bestCrop: { name: formData.season === 'Kharif' ? 'Paddy' : (formData.season === 'Rabi' ? 'Wheat' : 'Sugarcane'), suitabilityScore: 95, confidence: 'Very High', riskLevel: 'Low' },
         cultivation: { soil: formData.soil, season: formData.season, temperature: '25°C - 35°C', humidity: '50% - 70%', rainfall: '500 - 800 mm', water: 'Moderate', sunlight: 'Full Sun (6-8 hours/day)', sowingMethod: 'Direct Seeding / Transplanting', harvestingMethod: 'Manual / Mechanical Harvester' },
         growth: { duration: 110, germination: '7-10 Days', stages: 'Seedling -> Vegetative -> Flowering -> Maturity', harvestTime: 'Late October' },
         fertilizer: { organic: 'Organic Compost, Farmyard Manure', chemical: 'Urea, DAP, MOP', schedule: 'Basal dose at sowing, top dressing at 30 and 45 days', quantity: 'NPK 10:20:20 kg/acre' },

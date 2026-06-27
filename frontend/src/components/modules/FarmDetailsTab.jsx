@@ -6,7 +6,7 @@ const tnDistricts = [
 ];
 
 const soilTypes = ["Red Soil", "Black Soil", "Alluvial Soil", "Sandy Soil", "Laterite Soil", "Mountain Soil"];
-const seasonTypes = ["Summer", "Winter", "Monsoon"];
+const seasonTypes = ["Rabi", "Kharif", "Whole Year"];
 const waterAvailabilities = ["Low", "Medium", "High"];
 const irrigationMethods = ["Drip Irrigation", "Sprinkler", "Surface", "Rainfed"];
 
@@ -17,7 +17,7 @@ const generateAIReport = (farmData) => {
   return {
     date: new Date().toISOString(),
     bestCrop: {
-      name: farmData.season === "Summer" ? "Groundnut" : (farmData.season === "Winter" ? "Wheat" : "Paddy"),
+      name: farmData.season === "Rabi" ? "Wheat" : (farmData.season === "Kharif" ? "Paddy" : "Sugarcane"),
       suitabilityScore: 95,
       confidence: "High",
       riskLevel: "Low"
@@ -89,7 +89,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const [viewingFarm, setViewingFarm] = useState(null);
   
   const [formData, setFormData] = useState(activeFarm || {
-    name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation'
+    name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation'
   });
 
   useEffect(() => {
@@ -101,7 +101,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const handleAddNew = () => {
     setActiveFarm(null);
     setIsEditing(true);
-    setFormData({ name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation' });
+    setFormData({ name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation' });
   };
 
   const handleSelectFarm = (farm) => {
@@ -123,7 +123,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     if (activeFarm?.id === id) {
       setActiveFarm(updated[0] || null);
       setIsEditing(false);
-      setFormData(updated[0] || { name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Summer', water: 'Medium', irrigation: 'Drip Irrigation' });
+      setFormData(updated[0] || { name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation' });
     }
   };
 
