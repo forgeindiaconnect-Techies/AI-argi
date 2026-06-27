@@ -26,6 +26,7 @@ const client = new OpenAI({
 
 // Crop dataset routes
 app.use("/api/crops", cropRoutes);
+app.use("/api/weather", require("./routes/weatherRoutes"));
 
 // Chatbot route
 app.post("/ask", async (req, res) => {

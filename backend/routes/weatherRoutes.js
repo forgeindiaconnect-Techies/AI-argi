@@ -4,6 +4,6 @@ const { getWeather } = require('../controllers/weatherController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
-  .get(protect, getWeather);
+  .get(getWeather);
 
 module.exports = router;
