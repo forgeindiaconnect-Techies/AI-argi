@@ -27,8 +27,26 @@ const Dashboard = () => {
     const info = JSON.parse(localStorage.getItem('userInfo') || '{}');
     return info.email || '';
   });
-  const [farms, setFarms] = useState([]);
-  const [activeFarm, setActiveFarm] = useState(null);
+  const [farms, setFarms] = useState(() => {
+    const saved = localStorage.getItem('sams_farms');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [activeFarm, setActiveFarm] = useState(() => {
+    const saved = localStorage.getItem('sams_active_farm');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sams_farms', JSON.stringify(farms));
+  }, [farms]);
+
+  useEffect(() => {
+    if (activeFarm) {
+      localStorage.setItem('sams_active_farm', JSON.stringify(activeFarm));
+    } else {
+      localStorage.removeItem('sams_active_farm');
+    }
+  }, [activeFarm]);
 
   const navigate = useNavigate();
 

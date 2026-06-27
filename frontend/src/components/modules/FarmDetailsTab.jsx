@@ -94,7 +94,13 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
 
   useEffect(() => {
     if (activeFarm && !isEditing) {
-      setFormData(activeFarm);
+      if (!activeFarm.aiReport) {
+        const farmWithReport = { ...activeFarm, aiReport: generateAIReport(activeFarm) };
+        setActiveFarm(farmWithReport);
+        setFormData(farmWithReport);
+      } else {
+        setFormData(activeFarm);
+      }
     }
   }, [activeFarm, isEditing]);
 
@@ -105,9 +111,10 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   };
 
   const handleSelectFarm = (farm) => {
-    setActiveFarm(farm);
+    const farmWithReport = farm.aiReport ? farm : { ...farm, aiReport: generateAIReport(farm) };
+    setActiveFarm(farmWithReport);
     setIsEditing(false);
-    setFormData(farm);
+    setFormData(farmWithReport);
   };
 
   const handleEditClick = (e, farm) => {
@@ -140,15 +147,16 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const handleSave = () => {
     if (!formData.name || !formData.district || !formData.area) return alert('Farm Name, District, and Area are required');
 
+    const aiReport = generateAIReport(formData);
     let updatedFarm;
     const isNew = !activeFarm;
     
     if (activeFarm) {
-      updatedFarm = { ...formData, id: activeFarm.id };
+      updatedFarm = { ...formData, id: activeFarm.id, aiReport };
       const updated = farms.map(f => f.id === activeFarm.id ? updatedFarm : f);
       setFarms(updated);
     } else {
-      updatedFarm = { ...formData, id: Date.now() };
+      updatedFarm = { ...formData, id: Date.now(), aiReport };
       setFarms(prev => [...prev, updatedFarm]);
     }
     setActiveFarm(updatedFarm);
