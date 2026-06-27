@@ -102,20 +102,12 @@ const generateAIReport = async (farmData) => {
 const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
   const [viewingFarm, setViewingFarm] = useState(null);
   
   const [formData, setFormData] = useState(activeFarm || {
     name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation'
   });
-  const [liveReport, setLiveReport] = useState(null);
-
-  useEffect(() => {
-    let active = true;
-    generateAIReport(formData).then(report => {
-      if (active) setLiveReport(report);
-    });
-    return () => { active = false; };
-  }, [formData.district, formData.season, formData.area, formData.water, formData.soil]);
 
   useEffect(() => {
     if (activeFarm && !isEditing) {
@@ -134,6 +126,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const handleAddNew = () => {
     setActiveFarm(null);
     setIsEditing(true);
+    setShowOutput(false);
     setFormData({ name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation' });
   };
 
@@ -145,6 +138,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     }
     setActiveFarm(farmWithReport);
     setIsEditing(false);
+    setShowOutput(false);
     setFormData(farmWithReport);
   };
 
@@ -152,6 +146,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     e.stopPropagation();
     handleSelectFarm(farm);
     setIsEditing(true);
+    setShowOutput(false);
   };
 
   const handleDelete = (e, id) => {
@@ -161,6 +156,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     if (activeFarm?.id === id) {
       setActiveFarm(updated[0] || null);
       setIsEditing(false);
+      setShowOutput(false);
       setFormData(updated[0] || { name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation' });
     }
   };
@@ -192,6 +188,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     }
     setActiveFarm(updatedFarm);
     setIsEditing(false);
+    setShowOutput(false);
     
     // Push notification to Admin Dashboard
     const adminNotifs = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
@@ -204,6 +201,15 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
       isRead: false
     });
     localStorage.setItem('sams_admin_notifications', JSON.stringify(adminNotifs));
+  };
+
+  const handleRunAnalysis = () => {
+    setIsAnalyzing(true);
+    setShowOutput(false);
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setShowOutput(true);
+    }, 1500);
   };
 
   return (
@@ -324,13 +330,43 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
           )}
         </div>
 
+        {/* Ready to Analyze Banner */}
+        {!isEditing && activeFarm && !showOutput && !isAnalyzing && (
+          <div className="card bg-gradient-to-r from-agri-green/10 via-emerald-50 to-agri-green/10 dark:from-agri-green/20 dark:via-gray-800 dark:to-agri-green/20 border border-agri-green/30 p-8 text-center animate-in fade-in duration-500">
+            <div className="w-16 h-16 bg-agri-green/20 text-agri-green rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Sprout className="w-8 h-8" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Ready for AI Recommendations
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-6">
+              Your farm details for <span className="font-bold text-agri-green">{activeFarm.name}</span> ({activeFarm.area} Ac, {activeFarm.soil}, {activeFarm.season}) are saved. Click below to run AI analysis and get comprehensive crop planning & advisory recommendations.
+            </p>
+            <button
+              onClick={handleRunAnalysis}
+              className="btn-primary px-8 py-3.5 text-lg flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              <Activity className="w-5 h-5 animate-pulse" /> Run AI Analysis
+            </button>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isAnalyzing && (
+          <div className="card p-12 text-center animate-in fade-in duration-500">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 border-4 border-agri-green/20 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-agri-green rounded-full border-t-transparent animate-spin"></div>
+              <Sprout className="absolute inset-0 m-auto w-8 h-8 text-agri-green animate-pulse" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Analyzing Farm Data...</h3>
+            <p className="text-gray-500">Evaluating soil, weather patterns, and crop suitability datasets for {activeFarm?.district}.</p>
+          </div>
+        )}
+
         {/* AI Analysis Report Section */}
-        {(() => {
-          const reportToShow = (isEditing ? liveReport : activeFarm?.aiReport) || liveReport || activeFarm?.aiReport;
-          if (!reportToShow) return null;
-          const activeFarmData = { ...(activeFarm || {}), ...formData, aiReport: reportToShow };
-          return ((activeFarm) => (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {!isEditing && activeFarm?.aiReport && showOutput && !isAnalyzing && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-agri-green/10 rounded-lg">
                 <FileText className="w-6 h-6 text-agri-green" />
@@ -575,9 +611,8 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
               </div>
             </div>
 
-            </div>
-          ))(activeFarmData);
-        })()}
+          </div>
+        )}
 
       </div>
 
@@ -619,6 +654,36 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
                   <p className="font-bold text-lg">{viewingFarm.irrigation}</p>
                 </div>
               </div>
+
+              {viewingFarm.aiReport && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-5 mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider flex items-center gap-1">
+                      <Sprout className="w-4 h-4" /> AI Recommended Result
+                    </span>
+                    <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      Score: {viewingFarm.aiReport.bestCrop?.suitabilityScore || viewingFarm.aiReport.bestCrop?.score || 95}%
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
+                    {viewingFarm.aiReport.bestCrop?.name || 'N/A'}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-green-200 dark:border-green-800/60 text-sm">
+                    <div>
+                      <p className="text-xs text-gray-500">Expected Yield</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">
+                        {viewingFarm.aiReport.yieldPrediction?.perAcre || viewingFarm.aiReport.yield?.perAcre || 1000} Kg/Ac
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Expected Revenue</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">
+                        ₹{(viewingFarm.aiReport.market?.revenue || 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
