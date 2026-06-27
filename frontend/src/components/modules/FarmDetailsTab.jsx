@@ -28,7 +28,6 @@ const generateAIReport = async (farmData) => {
   const datasetArea = Number(apiData?.area) || 1;
   const datasetProduction = Number(apiData?.production) || 0;
   const yieldPerAcre = datasetArea > 0 && datasetProduction > 0 ? Math.round(datasetProduction / datasetArea) : 1000;
-  const pricePerKg = 80;
 
   return {
     date: new Date().toISOString(),
@@ -38,63 +37,21 @@ const generateAIReport = async (farmData) => {
       confidence: "High",
       riskLevel: "Low"
     },
-    alternativeCrops: [
-      { name: "Cotton", score: 90 },
-      { name: "Maize", score: 88 },
-      { name: "Millets", score: 85 },
-      { name: "Sunflower", score: 83 },
-      { name: "Sesame", score: 80 }
-    ],
-    timeline: {
-      sowingDate: "15 June 2026",
-      germinationPeriod: "7 Days",
-      vegetativeGrowth: "40 Days",
-      floweringStage: "30 Days",
-      harvestDate: "10 October 2026",
-      totalDuration: 117
-    },
-    weather: {
-      temperature: "25°C - 35°C",
-      humidity: "50% - 70%",
-      rainfall: "500 - 800 mm",
-      wind: "Moderate (10-15 km/h)"
-    },
-    water: {
-      daily: "5 Liters/Plant",
-      weekly: "35 Liters/Plant",
-      schedule: "Every 3 days",
-      droughtRisk: farmData.water === "Low" ? "High" : "Low"
-    },
-    fertilizer: {
-      organic: ["Compost", "Vermicompost", "Farmyard Manure"],
-      chemical: ["Urea", "DAP", "Potash"],
-      schedule: "Basal dressing before sowing, top dressing at 30 & 45 days",
-      quantity: "NPK 10:20:20 kg/acre"
-    },
+    alternativeCrops: (apiData?.topCrops || [])
+      .filter((c) => c.crop !== bestCropName)
+      .slice(0, 5)
+      .map((c, index) => ({
+        name: c.crop,
+        score: Math.max(90 - index * 3, 70),
+        area: c.area,
+        production: c.production,
+        year: c.year,
+      })),
     yieldPrediction: {
       perAcre: yieldPerAcre,
       total: area * yieldPerAcre,
-      quality: "Premium Grade A"
-    },
-    market: {
-      pricePerKg: pricePerKg,
-      revenue: area * yieldPerAcre * pricePerKg,
-      profitability: "High"
-    },
-    diseaseRisk: [
-      { name: "Leaf Spot Disease", risk: 10, prevention: "Use resistant varieties, apply proper fungicide" },
-      { name: "Rust Disease", risk: 5, prevention: "Maintain plant spacing, avoid overhead watering" }
-    ],
-    pestMonitoring: [
-      { name: "Aphids", prevention: "Neem oil spray", recommended: "Imidacloprid" },
-      { name: "White Grub", prevention: "Deep summer ploughing", recommended: "Chlorpyrifos" }
-    ],
-    smartTips: {
-      bestSowingMonth: "June",
-      bestHarvestingMonth: "October",
-      waterSaving: "Use drip irrigation, apply mulching",
-      soilImprovement: "Crop rotation with legumes, green manuring",
-      seasonalAdvice: "Ensure good drainage during heavy monsoon"
+      datasetArea,
+      datasetProduction
     }
   };
 };
@@ -394,220 +351,50 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
               {/* 12. AI Summary Card Snippet */}
               <div className="card bg-gray-900 text-white shadow-lg flex flex-col justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Lightbulb className="w-4 h-4 text-yellow-400"/> AI Quick Summary</h3>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Lightbulb className="w-4 h-4 text-yellow-400"/> AI Dataset Summary</h3>
                   <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                    <p className="text-gray-300">Location: <span className="text-white font-medium">{activeFarm.district}</span></p>
-                    <p className="text-gray-300">Soil: <span className="text-white font-medium">{activeFarm.soil}</span></p>
+                    <p className="text-gray-300">District: <span className="text-white font-medium">{activeFarm.district}</span></p>
                     <p className="text-gray-300">Season: <span className="text-white font-medium">{activeFarm.season}</span></p>
-                    <p className="text-gray-300">Water: <span className="text-white font-medium">{activeFarm.water}</span></p>
-                    <p className="text-gray-300">Yield: <span className="text-green-400 font-bold">{activeFarm.aiReport.yieldPrediction.perAcre} Kg/Acre</span></p>
-                    <p className="text-gray-300">Profit: <span className="text-green-400 font-bold">{activeFarm.aiReport.market.profitability}</span></p>
+                    <p className="text-gray-300">Land Area: <span className="text-white font-medium">{activeFarm.area} Ac</span></p>
+                    <p className="text-gray-300">Soil: <span className="text-white font-medium">{activeFarm.soil}</span></p>
+                    <p className="text-gray-300">Dataset Area: <span className="text-white font-medium">{activeFarm.aiReport.yieldPrediction?.datasetArea || 1} Ha</span></p>
+                    <p className="text-gray-300">Dataset Prod.: <span className="text-green-400 font-bold">{Number(activeFarm.aiReport.yieldPrediction?.datasetProduction || 0).toLocaleString()} T</span></p>
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-sm">Final Verdict: <strong className="text-agri-green-light">Highly suitable for cultivation.</strong></p>
+                  <p className="text-sm">Dataset Verdict: <strong className="text-agri-green-light">Recommended based on historical production records.</strong></p>
                 </div>
               </div>
             </div>
 
             {/* 2. Alternative Crop Suggestions */}
             <div>
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500"/> Alternative Crop Suggestions</h3>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500"/> Top Alternative Suitable Crops (Dataset Records)</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {activeFarm.aiReport.alternativeCrops.map((crop, idx) => (
+                {activeFarm.aiReport.alternativeCrops?.map((crop, idx) => (
                   <div key={idx} className="card p-4 text-center hover:border-blue-300 transition-colors">
                     <h4 className="font-bold text-gray-800 dark:text-gray-200">{crop.name}</h4>
                     <div className="w-12 h-12 rounded-full border-4 border-blue-100 flex items-center justify-center mx-auto mt-3 mb-2">
                       <span className="font-bold text-blue-600">{crop.score}%</span>
                     </div>
-                    <span className="text-xs text-gray-500">Suitability</span>
+                    <p className="text-xs text-gray-500">Year: <strong className="text-gray-700 dark:text-gray-300">{crop.year || 'N/A'}</strong></p>
+                    <p className="text-xs text-gray-500">Prod: <strong className="text-green-600 dark:text-green-400">{Number(crop.production || 0).toLocaleString()} T</strong></p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 3. Cultivation Timeline */}
-              <div className="card">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-500"/> Cultivation Timeline</h3>
-                <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent">
-                  {[
-                    { label: "Sowing", val: activeFarm.aiReport.timeline.sowingDate },
-                    { label: "Germination", val: activeFarm.aiReport.timeline.germinationPeriod },
-                    { label: "Growth", val: activeFarm.aiReport.timeline.vegetativeGrowth },
-                    { label: "Flowering", val: activeFarm.aiReport.timeline.floweringStage },
-                    { label: "Harvest", val: activeFarm.aiReport.timeline.harvestDate }
-                  ].map((step, i) => (
-                    <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 border border-purple-500 z-10 text-purple-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full"></div>
-                      </div>
-                      <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 shadow-sm">
-                        <p className="text-xs text-gray-500 uppercase font-semibold">{step.label}</p>
-                        <p className="font-bold text-gray-800 dark:text-gray-200">{step.val}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
-                  <span className="inline-block bg-purple-100 text-purple-800 font-bold px-4 py-2 rounded-full text-sm">
-                    Total Duration: {activeFarm.aiReport.timeline.totalDuration} Days
-                  </span>
-                </div>
+            {/* 3. Expected Yield from Dataset */}
+            <div className="card bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5"/> Dataset Yield & Production Metrics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div><p className="text-emerald-100 text-sm mb-1">Historical Area</p><p className="text-3xl font-bold">{activeFarm.aiReport.yieldPrediction?.datasetArea || 1} Ha</p></div>
+                <div><p className="text-emerald-100 text-sm mb-1">Historical Production</p><p className="text-3xl font-bold">{Number(activeFarm.aiReport.yieldPrediction?.datasetProduction || 0).toLocaleString()} T</p></div>
+                <div><p className="text-emerald-100 text-sm mb-1">Dataset Yield / Acre</p><p className="text-3xl font-bold">{activeFarm.aiReport.yieldPrediction?.perAcre || 1000} Kg</p></div>
+                <div><p className="text-emerald-100 text-sm mb-1">Expected Farm Yield ({activeFarm.area} Ac)</p><p className="text-3xl font-bold">{Number(activeFarm.aiReport.yieldPrediction?.total || 0).toLocaleString()} Kg</p></div>
               </div>
-
-              <div className="space-y-6">
-                {/* 4. Weather Requirements */}
-                <div className="card">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Sun className="w-5 h-5 text-orange-500"/> Weather Requirements</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-orange-50 dark:bg-orange-900/10 rounded-lg">
-                      <p className="text-xs text-orange-600 dark:text-orange-400 font-bold uppercase mb-1">Temperature</p>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">{activeFarm.aiReport.weather.temperature}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
-                      <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase mb-1">Humidity</p>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">{activeFarm.aiReport.weather.humidity}</p>
-                    </div>
-                    <div className="p-3 bg-cyan-50 dark:bg-cyan-900/10 rounded-lg">
-                      <p className="text-xs text-cyan-600 dark:text-cyan-400 font-bold uppercase mb-1">Rainfall</p>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">{activeFarm.aiReport.weather.rainfall}</p>
-                    </div>
-                    <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                      <p className="text-xs text-gray-600 dark:text-gray-400 font-bold uppercase mb-1 flex items-center gap-1"><Wind className="w-3 h-3"/> Wind</p>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">{activeFarm.aiReport.weather.wind}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5. Water Requirement */}
-                <div className="card">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Droplets className="w-5 h-5 text-blue-500"/> Water Requirement</h3>
-                  <div className="flex gap-4 mb-4">
-                    <div className="flex-1 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-lg text-center">
-                      <p className="text-xs text-blue-600 font-bold uppercase">Daily</p>
-                      <p className="font-bold text-lg text-blue-900 dark:text-blue-200">{activeFarm.aiReport.water.daily}</p>
-                    </div>
-                    <div className="flex-1 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-lg text-center">
-                      <p className="text-xs text-blue-600 font-bold uppercase">Weekly</p>
-                      <p className="font-bold text-lg text-blue-900 dark:text-blue-200">{activeFarm.aiReport.water.weekly}</p>
-                    </div>
-                  </div>
-                  <ul className="text-sm space-y-2">
-                    <li className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
-                      <span className="text-gray-500">Irrigation Schedule:</span>
-                      <span className="font-medium">{activeFarm.aiReport.water.schedule}</span>
-                    </li>
-                    <li className="flex justify-between pt-1">
-                      <span className="text-gray-500">Drought Risk Indicator:</span>
-                      <span className={`font-bold px-2 py-0.5 rounded text-xs ${activeFarm.aiReport.water.droughtRisk === 'High' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{activeFarm.aiReport.water.droughtRisk}</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 6. Fertilizer Recommendation */}
-              <div className="card">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Sprout className="w-5 h-5 text-green-600"/> Fertilizer Recommendation</h3>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-green-700 dark:text-green-400 mb-2">Organic Fertilizers</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {activeFarm.aiReport.fertilizer.organic.map(f => <span key={f} className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-3 py-1 text-sm rounded-full">{f}</span>)}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Chemical Fertilizers</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {activeFarm.aiReport.fertilizer.chemical.map(f => <span key={f} className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-300 px-3 py-1 text-sm rounded-full">{f}</span>)}
-                    </div>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg mt-4 border border-blue-100 dark:border-blue-900">
-                    <p className="text-sm mb-2"><strong className="text-gray-900 dark:text-gray-100">Schedule:</strong> {activeFarm.aiReport.fertilizer.schedule}</p>
-                    <p className="text-sm"><strong className="text-gray-900 dark:text-gray-100">Quantity:</strong> {activeFarm.aiReport.fertilizer.quantity}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 9. Disease & 10. Pest Analysis */}
-              <div className="space-y-6">
-                <div className="card border-l-4 border-l-red-500">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Bug className="w-5 h-5 text-red-500"/> Pest & Disease Risk</h3>
-                  
-                  <div className="space-y-4">
-                    {activeFarm.aiReport.diseaseRisk.map((d, i) => (
-                      <div key={i} className="flex justify-between items-start border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                        <div>
-                          <h4 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                            {d.name} 
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${d.risk > 8 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>Risk: {d.risk}%</span>
-                          </h4>
-                          <p className="text-sm text-gray-500 mt-1">{d.prevention}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {activeFarm.aiReport.pestMonitoring.map((p, i) => (
-                      <div key={`p-${i}`} className="flex justify-between items-start border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                        <div>
-                          <h4 className="font-semibold text-gray-800 dark:text-gray-200">{p.name}</h4>
-                          <p className="text-sm text-gray-500 mt-1">Prevent: {p.prevention}</p>
-                          <p className="text-sm text-blue-600 dark:text-blue-400 mt-0.5">Recommended: {p.recommended}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 7. Yield Prediction & 8. Market & Revenue */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="card bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5"/> Yield Prediction</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-emerald-100 text-sm mb-1">Expected Yield / Acre</p>
-                    <p className="text-3xl font-bold">{activeFarm.aiReport.yieldPrediction.perAcre} Kg</p>
-                  </div>
-                  <div>
-                    <p className="text-emerald-100 text-sm mb-1">Total Expected Yield</p>
-                    <p className="text-3xl font-bold">{activeFarm.aiReport.yieldPrediction.total.toLocaleString()} Kg</p>
-                  </div>
-                </div>
-                <div className="mt-6 pt-4 border-t border-emerald-400/30">
-                  <p className="text-sm flex items-center gap-2"><ShieldAlert className="w-4 h-4"/> Quality Indicator: <strong>{activeFarm.aiReport.yieldPrediction.quality}</strong></p>
-                </div>
-              </div>
-
-              <div className="card bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><IndianRupee className="w-5 h-5"/> Market & Revenue</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-blue-200 text-sm mb-1">Expected Revenue</p>
-                    <p className="text-3xl font-bold">₹{activeFarm.aiReport.market.revenue.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-blue-200 text-sm mb-1">Current Market Price</p>
-                    <p className="text-3xl font-bold">₹{activeFarm.aiReport.market.pricePerKg} / Kg</p>
-                  </div>
-                </div>
-                <div className="mt-6 pt-4 border-t border-blue-400/30">
-                  <p className="text-sm flex items-center gap-2"><Activity className="w-4 h-4"/> Profitability Rating: <strong>{activeFarm.aiReport.market.profitability}</strong></p>
-                </div>
-              </div>
-            </div>
-
-            {/* 11. Smart Farming Tips */}
-            <div className="card bg-amber-50 border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-amber-800 dark:text-amber-500"><Lightbulb className="w-5 h-5"/> Smart Farming Tips</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-amber-900 dark:text-amber-200">
-                <div className="flex gap-2"><AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5"/> <p><strong>Best Sowing Month:</strong> {activeFarm.aiReport.smartTips.bestSowingMonth}</p></div>
-                <div className="flex gap-2"><AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5"/> <p><strong>Best Harvest Month:</strong> {activeFarm.aiReport.smartTips.bestHarvestingMonth}</p></div>
-                <div className="flex gap-2"><AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5"/> <p><strong>Water Saving:</strong> {activeFarm.aiReport.smartTips.waterSaving}</p></div>
-                <div className="flex gap-2"><AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5"/> <p><strong>Soil Improvement:</strong> {activeFarm.aiReport.smartTips.soilImprovement}</p></div>
-                <div className="flex gap-2 md:col-span-2"><AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5"/> <p><strong>Seasonal Advice:</strong> {activeFarm.aiReport.smartTips.seasonalAdvice}</p></div>
+              <div className="mt-6 pt-4 border-t border-emerald-400/30 text-sm flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4"/> Data Source: <strong>Government Agricultural Production Dataset</strong>
               </div>
             </div>
 
@@ -670,15 +457,15 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
                   </h3>
                   <div className="grid grid-cols-2 gap-3 pt-3 border-t border-green-200 dark:border-green-800/60 text-sm">
                     <div>
-                      <p className="text-xs text-gray-500">Expected Yield</p>
+                      <p className="text-xs text-gray-500">Expected Yield / Acre</p>
                       <p className="font-bold text-gray-800 dark:text-gray-200">
-                        {viewingFarm.aiReport.yieldPrediction?.perAcre || viewingFarm.aiReport.yield?.perAcre || 1000} Kg/Ac
+                        {viewingFarm.aiReport.yieldPrediction?.perAcre || 1000} Kg/Ac
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Expected Revenue</p>
+                      <p className="text-xs text-gray-500">Dataset Production</p>
                       <p className="font-bold text-gray-800 dark:text-gray-200">
-                        ₹{(viewingFarm.aiReport.market?.revenue || 0).toLocaleString()}
+                        {Number(viewingFarm.aiReport.yieldPrediction?.datasetProduction || 0).toLocaleString()} Tonnes
                       </p>
                     </div>
                   </div>
