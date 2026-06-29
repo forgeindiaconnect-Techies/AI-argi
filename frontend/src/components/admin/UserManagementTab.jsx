@@ -13,12 +13,43 @@ const UserManagementTab = () => {
     fetchUsers();
   }, []);
 
+  const defaultFarmers = [
+    { id: 'f_1', _id: 'f_1', name: 'Rajesh Kumar', email: 'rajesh.k@gmail.com', role: 'Farmer', status: 'Active', joinDate: '2026-06-15' },
+    { id: 'f_2', _id: 'f_2', name: 'Suresh Reddy', email: 'suresh.r@agri.com', role: 'Farmer', status: 'Active', joinDate: '2026-06-18' },
+    { id: 'f_3', _id: 'f_3', name: 'Anita Patel', email: 'anita.p@farms.in', role: 'Farmer', status: 'Pending', joinDate: '2026-06-20' },
+    { id: 'f_4', _id: 'f_4', name: 'Vikram Singh', email: 'vikram.s@kisan.org', role: 'Farmer', status: 'Active', joinDate: '2026-06-22' }
+  ];
+
   const fetchUsers = async () => {
+    let localUsers = [];
+    const stored = localStorage.getItem('sams_users');
+    if (stored) {
+      try { localUsers = JSON.parse(stored); } catch (e) { localUsers = defaultFarmers; }
+    } else {
+      localUsers = defaultFarmers;
+      localStorage.setItem('sams_users', JSON.stringify(defaultFarmers));
+    }
+
     try {
-      const { data } = await axios.get('https://ai-agri-ndqq.onrender.com/api/users');
-      setFarmers(data.map(u => ({ ...u, id: u._id, joinDate: new Date(u.createdAt || Date.now()).toISOString().split('T')[0] })));
+      const { data } = await axios.get('https://ai-agri-ndqq.onrender.com/api/users', { timeout: 6000 });
+      const formattedApi = data.map(u => ({
+        ...u,
+        id: u._id || u.id,
+        joinDate: u.joinDate || new Date(u.createdAt || Date.now()).toISOString().split('T')[0],
+        status: u.status || 'Active'
+      }));
+
+      // Merge local storage users (e.g. recent signups) with API users
+      const userMap = new Map();
+      formattedApi.forEach(u => userMap.set(u.email.toLowerCase(), u));
+      localUsers.forEach(u => userMap.set(u.email.toLowerCase(), { ...userMap.get(u.email.toLowerCase()), ...u }));
+      
+      const combined = Array.from(userMap.values());
+      setFarmers(combined);
+      localStorage.setItem('sams_users', JSON.stringify(combined));
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.warn('API error fetching users, loading from local management store:', error.message);
+      setFarmers(localUsers);
     }
   };
 
@@ -31,33 +62,68 @@ const UserManagementTab = () => {
     e.preventDefault();
     if (!currentFarmer.name || !currentFarmer.email) return;
 
-    try {
-      if (currentFarmer.id) {
-        // Edit existing
-        const { data } = await axios.put(`https://ai-agri-ndqq.onrender.com/api/users/${currentFarmer.id}`, currentFarmer);
-        setFarmers(farmers.map(f => f.id === currentFarmer.id ? { ...f, ...data, id: data._id } : f));
-      } else {
-        // Add new via auth register
+    let updatedList = [...farmers];
+    let targetUser = { ...currentFarmer };
+
+    if (currentFarmer.id && !currentFarmer.id.toString().startsWith('temp_')) {
+      // Edit existing
+      try {
+        const { data } = await axios.put(`https://ai-agri-ndqq.onrender.com/api/users/${currentFarmer.id}`, currentFarmer, { timeout: 6000 });
+        targetUser = { ...targetUser, ...data, id: data._id || currentFarmer.id };
+      } catch (error) {
+        console.warn('API edit failed, updating local state:', error.message);
+      }
+      updatedList = farmers.map(f => f.id === currentFarmer.id ? targetUser : f);
+    } else {
+      // Add new
+      const newId = 'u_' + Date.now();
+      targetUser = {
+        ...currentFarmer,
+        id: newId,
+        _id: newId,
+        role: 'Farmer',
+        status: currentFarmer.status || 'Active',
+        joinDate: new Date().toISOString().split('T')[0]
+      };
+      try {
         const { data } = await axios.post('https://ai-agri-ndqq.onrender.com/api/auth/register', {
           ...currentFarmer,
-          password: 'password123', // Default password for admin-created users
+          password: 'password123',
           role: 'Farmer'
-        });
-        setFarmers([...farmers, { ...data, id: data._id, joinDate: new Date().toISOString().split('T')[0], status: 'Active' }]);
+        }, { timeout: 6000 });
+        targetUser = { ...targetUser, ...data, id: data._id || targetUser.id };
+      } catch (error) {
+        console.warn('API register failed, saving locally:', error.message);
       }
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('Error saving user:', error);
+      updatedList = [targetUser, ...farmers];
+
+      // Add admin notification
+      const existingNotifs = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
+      const newNotif = {
+        id: Date.now(),
+        title: 'New Farmer Added',
+        message: `Admin added farmer "${targetUser.name}" (${targetUser.email}).`,
+        time: new Date().toISOString(),
+        isRead: false,
+        type: 'user'
+      };
+      localStorage.setItem('sams_admin_notifications', JSON.stringify([newNotif, ...existingNotifs]));
     }
+
+    setFarmers(updatedList);
+    localStorage.setItem('sams_users', JSON.stringify(updatedList));
+    setIsModalOpen(false);
   };
 
   const deleteFarmer = async (id) => {
     try {
-      await axios.delete(`https://ai-agri-ndqq.onrender.com/api/users/${id}`);
-      setFarmers(farmers.filter(f => f.id !== id));
+      await axios.delete(`https://ai-agri-ndqq.onrender.com/api/users/${id}`, { timeout: 6000 });
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.warn('API delete failed, removing locally:', error.message);
     }
+    const updatedList = farmers.filter(f => f.id !== id);
+    setFarmers(updatedList);
+    localStorage.setItem('sams_users', JSON.stringify(updatedList));
   };
 
   return (
