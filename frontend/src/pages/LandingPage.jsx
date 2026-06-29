@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, CloudRain, Cpu, BarChart3, ChevronRight, Sprout, MapPin, Mail, Phone, Play, CheckCircle2 } from 'lucide-react';
+import { Leaf, CloudRain, Cpu, BarChart3, ChevronRight, Sprout, MapPin, Mail, Phone, CheckCircle2 } from 'lucide-react';
 
 const LandingPage = () => {
   return (
@@ -26,7 +26,7 @@ const LandingPage = () => {
 
         <div className="flex gap-4 items-center">
           <Link to="/login" className="font-semibold text-gray-600 hover:text-agri-green dark:text-gray-300 transition-colors">Login</Link>
-          <Link to="/register" className="btn-primary shadow-lg shadow-agri-green/30 hover:shadow-agri-green/50 transition-all rounded-full px-6 py-2">Get Started</Link>
+          <Link to="/register" className="btn-primary shadow-lg shadow-agri-green/30 hover:shadow-agri-green/50 transition-all rounded-full px-6 py-2">Sign Up</Link>
         </div>
       </nav>
 
@@ -51,9 +51,6 @@ const LandingPage = () => {
               <Link to="/register" className="bg-agri-green hover:bg-agri-green-dark text-white text-lg font-semibold px-8 py-4 rounded-full flex items-center justify-center gap-2 shadow-xl shadow-agri-green/25 hover:scale-105 transition-all duration-300">
                 Start Farming Free <ChevronRight className="w-5 h-5" />
               </Link>
-              <a href="#video-demo" className="glass text-gray-800 dark:text-white text-lg font-semibold px-8 py-4 rounded-full flex items-center justify-center gap-2 hover:bg-white/50 transition-colors">
-                <Play className="w-5 h-5 text-agri-green" /> Watch Demo
-              </a>
             </div>
             
             {/* Trust Indicators */}
@@ -172,7 +169,7 @@ const LandingPage = () => {
               ))}
             </div>
             <Link to="/register" className="mt-10 inline-flex btn-primary px-8 py-4 text-lg rounded-full">
-              Get Started Today
+              Sign Up Today
             </Link>
           </div>
         </div>
