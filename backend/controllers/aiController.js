@@ -95,4 +95,75 @@ const generateRecommendations = async (req, res) => {
   }
 };
 
-module.exports = { generateRecommendations };
+// @desc    Chat with AgriAI assistant in requested language
+// @route   POST /api/ai/chat
+// @access  Public/Private
+const chatWithAi = async (req, res) => {
+  try {
+    const { message, language } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const lang = language || 'English';
+    const groqKey = process.env.GROQAI_API_KEY;
+    const openAiKey = process.env.OPENAI_API_KEY;
+
+    // Try Groq API first (Fast & multilingual)
+    if (groqKey && groqKey.startsWith('gsk_')) {
+      try {
+        const response = await axios.post(
+          'https://api.groq.com/openai/v1/chat/completions',
+          {
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: `You are AgriAI, an expert agriculture assistant for farmers. You MUST respond completely and fluently in ${lang}. Give practical, localized agricultural advice.` },
+              { role: 'user', content: message }
+            ]
+          },
+          {
+            headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+            timeout: 8000
+          }
+        );
+        if (response.data?.choices?.[0]?.message?.content) {
+          return res.json({ reply: response.data.choices[0].message.content });
+        }
+      } catch (err) {
+        console.warn('Groq API call failed, trying next:', err.message);
+      }
+    }
+
+    // Try OpenAI API next
+    if (openAiKey && openAiKey.startsWith('sk-') && !openAiKey.includes('dummy')) {
+      try {
+        const response = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: `You are AgriAI, an expert agriculture assistant for farmers. You MUST respond completely and fluently in ${lang}. Give practical, localized agricultural advice.` },
+              { role: 'user', content: message }
+            ]
+          },
+          {
+            headers: { 'Authorization': `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+            timeout: 8000
+          }
+        );
+        if (response.data?.choices?.[0]?.message?.content) {
+          return res.json({ reply: response.data.choices[0].message.content });
+        }
+      } catch (err) {
+        console.warn('OpenAI API call failed, falling back to local multilingual AI:', err.message);
+      }
+    }
+
+    // Return 200 OK with null reply so frontend cleanly triggers local multilingual dictionary response
+    res.json({ reply: null, fallback: true });
+  } catch (error) {
+    res.json({ reply: null, fallback: true });
+  }
+};
+
+module.exports = { generateRecommendations, chatWithAi };

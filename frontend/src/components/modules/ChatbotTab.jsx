@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sprout, Wind, Droplets, MapPin, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from '../../config/api';
 
 const ChatbotTab = ({ activeFarm }) => {
   const [messages, setMessages] = useState([]);
@@ -86,59 +87,105 @@ const ChatbotTab = ({ activeFarm }) => {
     setInput('');
     setIsTyping(true);
 
-    const getLocalAIResponse = (query) => {
+    const getLocalAIResponse = (query, currentLang) => {
       const q = query.toLowerCase();
       
-      if (q.includes('paddy') || q.includes('rice')) {
-        if (q.includes('fertilizer') || q.includes('npk') || q.includes('manure') || q.includes('nutrient')) {
-          return "🌱 **Paddy Fertilizer Recommendation:**\nFor optimal paddy yield in " + (activeFarm?.district || 'your district') + ", use an NPK ratio of **120:60:60 kg/ha**.\n\n1. **Basal Application (At Sowing/Transplanting):** Apply 50% N (Urea ~130kg), 100% P (DAP ~130kg), and 50% K (MOP ~50kg).\n2. **Active Tillering Stage (20-25 days):** Apply 25% N (Urea ~65kg).\n3. **Panicle Initiation Stage (45 days):** Apply remaining 25% N + 50% K.\n💡 *Tip: Apply Zinc Sulfate @ 25 kg/ha basal to prevent Khaira disease.*";
+      const langMap = {
+        'Tamil (தமிழ்)': {
+          paddy: "🌱 **நெல் ஆலோசனை:** சிறந்த மகசூலுக்கு 2-5 செ.மீ நீர் நிறுத்துங்கள். தழை, மணி, சாம்பல் சத்துக்களை (NPK) பிரித்து இடுங்கள். தண்டு துளைப்பான் மற்றும் புகையான் தாக்குதலை கண்காணிக்கவும்.",
+          sugarcane: "🎋 **கரும்பு பாதுகாப்பு:** நட்ட 3 நாட்களில் அட்ரசின் களைக்கொல்லியைத் தெளிக்கவும். குருத்துப்புழுவைக் கட்டுப்படுத்த கார்டாப் ஹைட்ரோகுளோரைடு குருணையை இடவும்.",
+          pest: "🐛 **பூச்சி மேலாண்மை:** சாறு உறிஞ்சும் பூச்சிகளைக் கட்டுப்படுத்த மஞ்சள் ஒட்டுப் பொறிகளை (ஏக்கருக்கு 15) வைக்கவும். வேப்ப எண்ணெய் (2மி.லி/லிட்டர்) தெளிக்கவும்.",
+          fertilizer: "🧪 **உர வழிகாட்டி:** மண் பரிசோதனை செய்த பின்பே உரம் இடவும். தழைச்சத்தை (யூரியா) 3 முறையாகப் பிரித்து இடுவதால் வேர்ப்பகுதிகளுக்கு முழுமையாகக் கிடைக்கும்.",
+          weather: "⛅ **வானிலை ஆலோசனை:** மருந்து அல்லது உரம் இடுவதற்கு முன் 5 நாள் வானிலை முன்னறிவிப்பைப் பார்க்கவும். மழை வரும் வாய்ப்பு இருந்தால் தெளிப்பதைத் தவிர்க்கவும்.",
+          default: `🤖 **AgriAI ஆலோசனை:** "${query}" குறித்த உங்கள் கேள்விக்கு, வாரந்தோறும் பயிர் ஆரோக்கியம் மற்றும் மண் ஈரப்பதத்தைக் கண்காணிக்க பரிந்துரைக்கிறோம். அருகிலுள்ள வேளாண் உதவி அலுவலரைத் தொடர்பு கொள்ளவும்.`
+        },
+        'Telugu (తెలుగు)': {
+          paddy: "🌱 **వరి సలహా:** మంచి దిగుబడి కోసం పొలంలో 2-5 సెం.మీ నీరు ఉంచండి. NPK ఎరువులను విడతలవారీగా వేయండి. కాండం తొలుచు పురుగు మరియు సుడిదోమ నివారణకు జాగ్రత్తలు తీసుకోండి.",
+          sugarcane: "🎋 **చెరకు రక్షణ:** నాటిన 3 రోజుల్లోపు అట్రాజిన్ కలుపు మందు పిచికారీ చేయండి. మొవ్వ కుళ్ళు పురుగు నివారణకు కార్టాప్ హైడ్రోక్లోరైడ్ వాడండి.",
+          pest: "🐛 **పురుగుల యాజమాన్యం:** రసం పీల్చే పురుగుల కోసం పసుపు రంగు జిగురు అట్టలను అమర్చండి. వేప నూనె (2ml/L) పిచికారీ చేయండి.",
+          fertilizer: "🧪 **ఎరువుల యాజమాన్యం:** నేల పరీక్ష ఆధారంగానే ఎరువులు వాడండి. నత్రజని (యూరియా) ని 3 సార్లుగా విభజించి వేయడం వలన పంటకు బాగా అందుతుంది.",
+          weather: "⛅ **వాతావరణ సలహా:** మందులు పిచికారీ చేసే ముందు 5 రోజుల వాతావరణ సమాచారం గమనించండి. వర్షం వచ్చే అవకాశం ఉంటే పిచికారీ వాయిదా వేయండి.",
+          default: `🤖 **AgriAI సలహా:** "${query}" కి సంబంధించి, క్రమం తప్పకుండా నేల తేమ మరియు ఆకుల ఆరోగ్యాన్ని పరిశీలించండి. ఖచ్చితమైన మోతాదుల కోసం మీ స్థానిక వ్యవసాయ అధికారిని సంప్రదించండి.`
+        },
+        'Hindi (हिन्दी)': {
+          paddy: "🌱 **धान सलाह:** अच्छी उपज के लिए खेत में 2-5 सेमी पानी बनाए रखें। NPK उर्वरकों को अलग-अलग चरणों में डालें। तना छेदक और भूरा माहो (BPH) की निगरानी करें।",
+          sugarcane: "🎋 **गन्ना सुरक्षा:** बुवाई के 3 दिनों के भीतर एट्राजिन (Atrazine) खरपतवार नाशक का छिड़काव करें। अगोला बेधक के लिए कार्टाप हाइड्रोक्लोराइड का उपयोग करें।",
+          pest: "🐛 **कीट प्रबंधन:** रस चूसने वाले कीटों के लिए पीले चिपचिपे जाल (15/एकड़) लगाएं। जैविक उपाय के रूप में नीम का तेल (2 मिली/लीटर) छिड़कें।",
+          fertilizer: "🧪 **उर्वरक मार्गदर्शन:** हमेशा मिट्टी की जाँच के बाद उर्वरक डालें। नाइट्रोजन (यूरिया) को 3 भागों में बांटकर देने से पौधे को पूरा लाभ मिलता है।",
+          weather: "⛅ **मौसम सलाह:** कीटनाशक या उर्वरक डालने से पहले 5 दिनों के मौसम का पूर्वानुमान देखें। यदि बारिश की संभावना हो तो छिड़काव न करें।",
+          default: `🤖 **AgriAI सलाह:** "${query}" के संबंध में, हम मिट्टी की नमी और पत्तियों के स्वास्थ्य की नियमित जांच की सलाह देते हैं। सटीक मात्रा के लिए अपने नजदीकी कृषि विज्ञान केंद्र (KVK) से संपर्क करें।`
+        },
+        'Malayalam (മലയാളം)': {
+          paddy: "🌱 **നെൽകൃഷി നിർദ്ദേശം:** മികച്ച വിളവിനായി പാടത്ത് 2-5 സെ.മീ വെള്ളം നിലനിർത്തുക. NPK വളങ്ങൾ ഗഡുക്കളായി നൽകുക. തണ്ടുതുരപ്പൻ, മുഞ്ഞ എന്നിവയെ നിരീക്ഷിക്കുക.",
+          sugarcane: "🎋 **കരിമ്പ് സംരക്ഷണം:** നട്ട് 3 ദിവസത്തിനുള്ളിൽ അട്റാസിൻ തളിക്കുക. തണ്ടുതുരപ്പനെ തടയാൻ കാർട്ടാപ്പ് ഹൈഡ്രോക്ലോറൈഡ് ഉപയോഗിക്കുക.",
+          pest: "🐛 **കീടനിയന്ത്രണം:** നീരൂറ്റിക്കുടിക്കുന്ന കീടങ്ങളെ അകറ്റാൻ മഞ്ഞക്കെണികൾ സ്ഥാപിക്കുക. ജൈവകീടനാശിനിയായി വേപ്പെണ്ണ സ്പ്രേ ചെയ്യുക.",
+          fertilizer: "🧪 **വളപ്രയോഗം:** മണ്ണ് പരിശോധനയ്ക്ക് ശേഷം മാത്രം വളം നൽകുക. യൂറിയ 3 തവണകളായി നൽകുന്നത് കൂടുതൽ ഫലപ്രദമാണ്.",
+          weather: "⛅ **കാലാവസ്ഥാ നിർദ്ദേശം:** കീടനാശിനികൾ തളിക്കുന്നതിന് മുമ്പ് കാലാവസ്ഥാ പ്രവചനം ശ്രദ്ധിക്കുക. മഴയ്ക്ക് സാധ്യതയുണ്ടെങ്കിൽ സ്പ്രേ ചെയ്യുന്നത് ഒഴിവാക്കുക.",
+          default: `🤖 **AgriAI നിർദ്ദേശം:** "${query}" സംബന്ധിച്ച്, ആഴ്ചതോറും വിളകളുടെ ആരോഗ്യം പരിശോധിക്കാൻ ശുപാർശ ചെയ്യുന്നു. കൃത്യമായ അളവുകൾക്കായി അടുത്തുള്ള കൃഷിഭവനുമായി ബന്ധപ്പെടുക.`
+        },
+        'Kannada (ಕನ್ನಡ)': {
+          paddy: "🌱 **ಭತ್ತದ ಸಲಹೆ:** ಉತ್ತಮ ಇಳುವರಿಗಾಗಿ ಗದ್ದೆಯಲ್ಲಿ 2-5 ಸೆಂ.ಮೀ ನೀರು ನಿಲ್ಲಿಸಿ. NPK ರಸಗೊಬ್ಬರಗಳನ್ನು ಹಂತ ಹಂತವಾಗಿ ನೀಡಿ. ಕಾಂಡ ಕೊರಕ ಮತ್ತು ಕಂದು ಜಿಗಿಹುಳದ ಬಗ್ಗೆ ಗಮನವಿರಲಿ.",
+          sugarcane: "🎋 **ಕಬ್ಬು ರಕ್ಷಣೆ:** ನಾಟಿ ಮಾಡಿದ 3 ದಿನಗಳಲ್ಲಿ ಅಟ್ರಾಜಿನ್ ಕಳೆನಾಶಕ ಸಿಂಪಡಿಸಿ. ಸುಳಿ ಕೊರಕದ ನಿಯಂತ್ರಣಕ್ಕೆ ಕಾರ್ಟಾಪ್ ಹೈಡ್ರೋಕ್ಲೋರೈಡ್ ಬಳಸಿ.",
+          pest: "🐛 **ಕೀಟ ನಿರ್ವಹಣೆ:** ರಸ ಹೀರುವ ಕೀಟಗಳ ನಿಯಂತ್ರಣಕ್ಕೆ ಹಳದಿ ಅಂಟಿನ ಬಲೆಗಳನ್ನು ಅಳವಡಿಸಿ. ಸಾವಯವ ರಕ್ಷಣೆಯಾಗಿ ಬೇವಿನ ಎಣ್ಣೆ (2ml/L) ಸಿಂಪಡಿಸಿ.",
+          fertilizer: "🧪 **ರಸಗೊಬ್ಬರ ಮಾಹಿತಿ:** ಮಣ್ಣಿನ ಪರೀಕ್ಷೆಯ ನಂತರವೇ ಗೊಬ್ಬರ ನೀಡಿ. ಸಾರಜನಕವನ್ನು (ಯೂರಿಯಾ) 3 ಕಂತುಗಳಲ್ಲಿ ನೀಡುವುದರಿಂದ ಸಸ್ಯಗಳಿಗೆ ಉತ್ತಮ ಪೋಷಣೆ ಸಿಗುತ್ತದೆ.",
+          weather: "⛅ **ಹವಾಮಾನ ಸಲಹೆ:** ಔಷಧಿ ಅಥವಾ ಗೊಬ್ಬರ ಸಿಂಪಡಿಸುವ ಮೊದಲು 5 ದಿನಗಳ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಗಮನಿಸಿ. ಮಳೆಯ ಸಾಧ್ಯತೆಯಿದ್ದರೆ ಸಿಂಪರಣೆ ಮುಂದೂಡಿ.",
+          default: `🤖 **AgriAI ಸಲಹೆ:** "${query}" ಕುರಿತು, ವಾರಕ್ಕೊಮ್ಮೆ ಮಣ್ಣಿನ ತೇವಾಂಶ ಮತ್ತು ಎಲೆಗಳ ಆರೋಗ್ಯವನ್ನು ಪರೀಕ್ಷಿಸಿ. ನಿಖರವಾದ ಮಾಹಿತಿಗಾಗಿ ನಿಮ್ಮ ಹತ್ತಿರದ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ.`
+        },
+        'English': {
+          paddy: "🌱 **Paddy Advisory:** For optimal yield, maintain 2-5 cm standing water. Apply NPK in split doses (Basal: 50% N, full P&K; Tillering: 25% N; Panicle initiation: 25% N). Monitor for Stem Borer and Brown Plant Hopper.",
+          sugarcane: "🎋 **Sugarcane Protection:** Pre-emergence spray of Atrazine @ 2 kg/ha within 3 days of planting. For early shoot borer, apply Cartap Hydrochloride 4G @ 25 kg/ha at 30 & 45 days.",
+          pest: "🐛 **Pest Management:** Install Yellow Sticky Traps (15/acre) for sucking pests. Spray Neem Oil 10000 ppm @ 2ml/L as an organic deterrent.",
+          fertilizer: "🧪 **Fertilizer Guide:** Always test soil NPK first. Split Nitrogen into 3 doses to avoid leaching. Apply Phosphorus 100% basal as it moves slowly.",
+          weather: "⛅ **Weather Advisory:** Check the 5-day weather forecast before spraying pesticides or fertilizers. Do not spray if rain is expected within 24 hours.",
+          default: `🤖 **AgriAI Advisory:** Regarding your query about "${query}", we recommend monitoring soil moisture and inspecting leaf health weekly. Contact your local KVK or agriculture officer for exact dosages.`
         }
-        return "🌾 **Paddy Crop Advisory:** Ensure 2-5 cm standing water during tillering. Monitor for Stem Borer and Brown Plant Hopper (BPH). Use Neem-based sprays for early pest defense.";
+      };
+
+      const replies = langMap[currentLang] || langMap['English'];
+
+      if (q.includes('paddy') || q.includes('rice') || q.includes('நெல்') || q.includes('వరి') || q.includes('धान') || q.includes('നെൽ') || q.includes('ಭತ್ತ')) {
+        return replies.paddy;
       }
-      
-      if (q.includes('sugarcane')) {
-        if (q.includes('chemical') || q.includes('pest') || q.includes('weed') || q.includes('spray') || q.includes('borer') || q.includes('rot')) {
-          return "🎋 **Sugarcane Chemical & Crop Protection Guide:**\n\n1. **Weed Control:** Pre-emergence spray of **Atrazine @ 2 kg/ha** in 800L water within 3 days of planting.\n2. **Early Shoot Borer:** Soil application of **Cartap Hydrochloride 4G @ 25 kg/ha** at 30 & 45 days after planting.\n3. **Red Rot Management:** Treat setts with **Carbendazim 50 WP (0.1%)** for 15 minutes before planting.\n⚠️ *Always wear protective gear while spraying chemicals.*";
-        }
-        return "🎋 **Sugarcane Cultivation:** Requires deep fertile soil and heavy irrigation (1500-2500 mm total water). Maintain row spacing of 90-120 cm for mechanized harvesting.";
+      if (q.includes('sugarcane') || q.includes('கரும்பு') || q.includes('చెరకు') || q.includes('गन्ना') || q.includes('കരിമ്പ്') || q.includes('ಕಬ್ಬು')) {
+        return replies.sugarcane;
+      }
+      if (q.includes('pest') || q.includes('insect') || q.includes('worm') || q.includes('borer') || q.includes('disease') || q.includes('பூச்சி') || q.includes('పురుగు') || q.includes('कीट') || q.includes('കീട') || q.includes('ಕೀಟ')) {
+        return replies.pest;
+      }
+      if (q.includes('fertilizer') || q.includes('npk') || q.includes('nutrient') || q.includes('urea') || q.includes('dap') || q.includes('உரம்') || q.includes('ఎరువు') || q.includes('उर्वरक') || q.includes('വളം') || q.includes('ಗೊಬ್ಬರ')) {
+        return replies.fertilizer;
+      }
+      if (q.includes('weather') || q.includes('rain') || q.includes('climate') || q.includes('storm') || q.includes('வானிலை') || q.includes('వాతావరణ') || q.includes('मौसम') || q.includes('കാലാവസ്ഥ') || q.includes('ಹವಾಮಾನ')) {
+        return replies.weather;
       }
 
-      if (q.includes('pest') || q.includes('insect') || q.includes('worm') || q.includes('borer') || q.includes('disease')) {
-        return "🐛 **Integrated Pest Management (IPM):**\n1. Install **Yellow Sticky Traps** (15/acre) for sucking pests (Aphids, Whitefly).\n2. Use **Pheromone Traps** (5/acre) for monitoring Fruit/Shoot borers.\n3. Foliar spray of **Neem Oil 10000 ppm @ 2ml/L** + sticker as an organic deterrent.";
-      }
-
-      if (q.includes('fertilizer') || q.includes('npk') || q.includes('nutrient') || q.includes('urea') || q.includes('dap')) {
-        return "🧪 **General Fertilizer Guidelines:**\nAlways test your soil NPK and Organic Carbon levels first. Generally, split Nitrogen applications into 3 doses to reduce leaching losses. Phosphorus should be applied 100% basal as it moves slowly in soil.";
-      }
-
-      if (q.includes('weather') || q.includes('rain') || q.includes('climate') || q.includes('storm')) {
-        return "⛅ **Weather & Irrigation Advice:**\nCheck the 5-day forecast before scheduling fertilizer or pesticide sprays. If rain is expected within 24 hours, postpone foliar sprays to avoid wash-off.";
-      }
-
-      return `🤖 **AgriAI Expert Advisory:**\nThank you for your inquiry regarding "${query}". Based on agricultural data for ${activeFarm?.district || 'your region'} (${activeFarm?.soil || 'standard soil'}), maintain balanced irrigation and inspect leaf health weekly. Feel free to ask specifically about fertilizer dosages or chemical sprays for any crop!`;
+      return replies.default;
     };
 
     try {
-      const response = await fetch('http://localhost:5001/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          message: `Respond in ${language}. Farm context: District=${activeFarm?.district || 'Unknown'}, Soil=${activeFarm?.soil || 'Unknown'}. User asked: ${input}` 
+          message: `Respond strictly and fluently in ${language}. Farm context: District=${activeFarm?.district || 'Unknown'}, Soil=${activeFarm?.soil || 'Unknown'}. User asked: ${input}`,
+          language: language
         })
       });
+
+      if (!response.ok) throw new Error('Network response was not ok');
 
       const data = await response.json();
       
       const aiResponse = {
         sender: 'ai',
-        text: data.reply || getLocalAIResponse(input),
+        text: data.reply || getLocalAIResponse(input, language),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
       setMessages(prev => [...prev, {
         sender: 'ai',
-        text: getLocalAIResponse(input),
+        text: getLocalAIResponse(input, language),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     } finally {

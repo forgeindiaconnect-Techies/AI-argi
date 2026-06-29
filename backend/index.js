@@ -45,6 +45,7 @@ app.use('/api/crops', require('./routes/cropRoutes'));
 app.use('/api/farms', require('./routes/farmRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/chat', require('./routes/aiRoutes'));
 app.use('/api/cultivations', require('./routes/cultivationRoutes'));
 app.use('/', require('./routes/testroute'));
 
