@@ -59,7 +59,7 @@ const generateAIReport = async (farmData) => {
 const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showOutput, setShowOutput] = useState(false);
+  const [showOutput, setShowOutput] = useState(true);
   const [viewingFarm, setViewingFarm] = useState(null);
   
   const [formData, setFormData] = useState(activeFarm || {
@@ -95,7 +95,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     }
     setActiveFarm(farmWithReport);
     setIsEditing(false);
-    setShowOutput(false);
+    setShowOutput(true);
     setFormData(farmWithReport);
   };
 
@@ -113,7 +113,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     if (activeFarm?.id === id) {
       setActiveFarm(updated[0] || null);
       setIsEditing(false);
-      setShowOutput(false);
+      setShowOutput(true);
       setFormData(updated[0] || { name: '', district: 'Coimbatore', area: '', soil: 'Red Soil', season: 'Rabi', water: 'Medium', irrigation: 'Drip Irrigation' });
     }
   };
@@ -145,7 +145,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
     }
     setActiveFarm(updatedFarm);
     setIsEditing(false);
-    setShowOutput(false);
+    setShowOutput(true);
     
     // Push notification to Admin Dashboard
     const adminNotifs = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
@@ -287,26 +287,7 @@ const FarmDetailsTab = ({ farms, setFarms, activeFarm, setActiveFarm }) => {
           )}
         </div>
 
-        {/* Ready to Analyze Banner */}
-        {!isEditing && activeFarm && !showOutput && !isAnalyzing && (
-          <div className="card bg-gradient-to-r from-agri-green/10 via-emerald-50 to-agri-green/10 dark:from-agri-green/20 dark:via-gray-800 dark:to-agri-green/20 border border-agri-green/30 p-8 text-center animate-in fade-in duration-500">
-            <div className="w-16 h-16 bg-agri-green/20 text-agri-green rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-              <Sprout className="w-8 h-8" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              Ready for AI Recommendations
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-6">
-              Your farm details for <span className="font-bold text-agri-green">{activeFarm.name}</span> ({activeFarm.area} Ac, {activeFarm.soil}, {activeFarm.season}) are saved. Click below to run AI analysis and get comprehensive crop planning & advisory recommendations.
-            </p>
-            <button
-              onClick={handleRunAnalysis}
-              className="btn-primary px-8 py-3.5 text-lg flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              <Activity className="w-5 h-5 animate-pulse" /> Run AI Analysis
-            </button>
-          </div>
-        )}
+
 
         {/* Loading State */}
         {isAnalyzing && (
