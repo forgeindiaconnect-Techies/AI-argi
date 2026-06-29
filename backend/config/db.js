@@ -1,19 +1,31 @@
 const mongoose = require('mongoose');
 
-const dns = require('dns');
-try {
-  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-} catch (e) {}
-
 const connectDB = async () => {
+  // In production (Render/cloud), use MONGODB_ATLAS_URI.
+  // In local development, fall back to MONGODB_URI (127.0.0.1).
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
+  const uri = isProduction
+    ? (process.env.MONGODB_ATLAS_URI || process.env.MONGODB_URI)
+    : (process.env.MONGODB_URI || process.env.MONGODB_ATLAS_URI);
+
+  if (!uri || uri === 'YOUR_ATLAS_URI_HERE') {
+    console.error('❌ MONGODB_URI is not set or is a placeholder. Please configure your database URI.');
+    console.error('   Local dev: set MONGODB_URI=mongodb://127.0.0.1:27017/ai_agri');
+    console.error('   Production: set MONGODB_ATLAS_URI=mongodb+srv://... in your Render dashboard');
+    return;
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+    const env = isProduction ? 'PRODUCTION (Atlas)' : 'LOCAL';
+    console.log(`✅ MongoDB Connected [${env}]: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    console.error('Please check your MONGODB_URI environment variable in the Render dashboard.');
-    // Don't exit - let the server stay alive so health checks pass
-    // Requests will fail gracefully with 500 errors instead of crashing
+    console.error(`❌ MongoDB connection failed: ${error.message}`);
+    console.error('   Check your MONGODB_URI / MONGODB_ATLAS_URI and ensure the IP is whitelisted in Atlas.');
+    // Don't exit — server stays alive so health checks pass
   }
 };
 

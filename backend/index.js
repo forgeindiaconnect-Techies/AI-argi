@@ -9,10 +9,28 @@ connectDB();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware — allow requests from local dev and production frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:4173',
+  process.env.FRONTEND_URL, // Set in Render dashboard for production
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(morgan('dev'));
+
 
 // Basic route
 app.get('/', (req, res) => {

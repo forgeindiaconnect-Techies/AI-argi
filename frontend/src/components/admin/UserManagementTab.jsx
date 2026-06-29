@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, CheckCircle, XCircle, User, Activity, X } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 
 const UserManagementTab = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +32,7 @@ const UserManagementTab = () => {
     }
 
     try {
-      const { data } = await axios.get('https://ai-agri-ndqq.onrender.com/api/users', { timeout: 6000 });
+      const { data } = await axios.get(`${API_BASE_URL}/api/users`, { timeout: 6000 });
       const formattedApi = data.map(u => ({
         ...u,
         id: u._id || u.id,
@@ -68,7 +69,7 @@ const UserManagementTab = () => {
     if (currentFarmer.id && !currentFarmer.id.toString().startsWith('temp_')) {
       // Edit existing
       try {
-        const { data } = await axios.put(`https://ai-agri-ndqq.onrender.com/api/users/${currentFarmer.id}`, currentFarmer, { timeout: 6000 });
+        const { data } = await axios.put(`${API_BASE_URL}/api/users/${currentFarmer.id}`, currentFarmer, { timeout: 6000 });
         targetUser = { ...targetUser, ...data, id: data._id || currentFarmer.id };
       } catch (error) {
         console.warn('API edit failed, updating local state:', error.message);
@@ -86,7 +87,7 @@ const UserManagementTab = () => {
         joinDate: new Date().toISOString().split('T')[0]
       };
       try {
-        const { data } = await axios.post('https://ai-agri-ndqq.onrender.com/api/auth/register', {
+        const { data } = await axios.post(`${API_BASE_URL}/api/auth/register`, {
           ...currentFarmer,
           password: 'password123',
           role: 'Farmer'
@@ -117,7 +118,7 @@ const UserManagementTab = () => {
 
   const deleteFarmer = async (id) => {
     try {
-      await axios.delete(`https://ai-agri-ndqq.onrender.com/api/users/${id}`, { timeout: 6000 });
+      await axios.delete(`${API_BASE_URL}/api/users/${id}`, { timeout: 6000 });
     } catch (error) {
       console.warn('API delete failed, removing locally:', error.message);
     }

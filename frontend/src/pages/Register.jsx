@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Leaf } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -50,7 +51,7 @@ const Register = () => {
     localStorage.setItem('sams_admin_notifications', JSON.stringify([newNotif, ...existingNotifs]));
 
     try {
-      const { data } = await axios.post('https://ai-agri-ndqq.onrender.com/api/auth/register', { name, email, password, role }, { timeout: 8000 });
+      const { data } = await axios.post(`${API_BASE_URL}/api/auth/register`, { name, email, password, role }, { timeout: 8000 });
       const mergedUser = { ...newUser, ...data, id: data._id || newUser.id };
       localStorage.setItem('userInfo', JSON.stringify(mergedUser));
       mergedUser.role === 'Admin' ? navigate('/admin') : navigate('/dashboard');

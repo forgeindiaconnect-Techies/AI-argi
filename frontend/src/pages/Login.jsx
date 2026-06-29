@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Leaf, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
-const API_URL = 'https://ai-agri-ndqq.onrender.com/api/auth/login';
+const API_URL = `${API_BASE_URL}/api/auth/login`;
 
 const Login = () => {
   const [email, setEmail] = useState('');
