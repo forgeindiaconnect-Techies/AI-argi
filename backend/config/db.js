@@ -5,7 +5,7 @@ const connectDB = async () => {
   // In local development, prefer MONGODB_ATLAS_URI for unified data, fallback to local.
   const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
 
-  const atlasUri = process.env.MONGODB_ATLAS_URI;
+  const atlasUri = process.env.MONGODB_ATLAS_URI || process.env.MONGODB_URI;
   const localUri = 'mongodb://127.0.0.1:27017/ai_agri';
 
   const primaryUri = atlasUri && atlasUri !== 'YOUR_ATLAS_URI_HERE' ? atlasUri : localUri;
