@@ -51,6 +51,9 @@ const LandingPage = () => {
               <Link to="/register" className="bg-agri-green hover:bg-agri-green-dark text-white text-lg font-semibold px-8 py-4 rounded-full flex items-center justify-center gap-2 shadow-xl shadow-agri-green/25 hover:scale-105 transition-all duration-300">
                 Start Farming Free <ChevronRight className="w-5 h-5" />
               </Link>
+              <a href="#guide" className="glass text-gray-800 dark:text-white text-lg font-semibold px-8 py-4 rounded-full flex items-center justify-center gap-2 hover:bg-white/50 transition-colors">
+                <Sprout className="w-5 h-5 text-agri-green" /> Step-by-Step Guide
+              </a>
             </div>
             
             {/* Trust Indicators */}
