@@ -30,21 +30,25 @@ const SoilAnalysisTab = ({ activeFarm }) => {
 
   const handleSaveToAdmin = () => {
     setIsSynced(true);
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const newReport = {
       id: `#ST-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
       farmName: activeFarm?.name || 'North Acre',
-      owner: 'John Farmer',
+      owner: userInfo.name || 'Farmer',
       date: new Date().toISOString().split('T')[0],
       score: 85,
+      nutrients: { nitrogen: 120, phosphorus: 98, potassium: 86 },
+      soilType: activeFarm?.soil || 'Red Soil',
+      district: activeFarm?.district || '',
     };
-    
+
     const stored = localStorage.getItem('sams_soil_reports');
     const existing = stored ? JSON.parse(stored) : [];
-    localStorage.setItem('sams_soil_reports', JSON.stringify([newReport, ...existing]));
+    // Avoid duplicate entries for same farm on same date
+    const filtered = existing.filter(r => !(r.farmName === newReport.farmName && r.date === newReport.date));
+    localStorage.setItem('sams_soil_reports', JSON.stringify([newReport, ...filtered]));
 
-    setTimeout(() => {
-      setIsSynced(false);
-    }, 1500);
+    setTimeout(() => { setIsSynced(false); }, 1500);
   };
 
   const handleExport = () => {
