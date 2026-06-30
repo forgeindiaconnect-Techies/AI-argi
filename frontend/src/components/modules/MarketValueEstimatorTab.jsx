@@ -10,7 +10,25 @@ const cropsList = [
 ];
 
 // Mock Database for Market Intelligence
-const marketData = {};
+const marketData = {
+  "Groundnut": { price: 65, unit: "Kilogram (Kg)", demand: "High", trend: "Rising", yieldPerAcre: 1200, discount: 2, gst: 5 },
+  "Paddy": { price: 25, unit: "Kilogram (Kg)", demand: "Very High", trend: "Stable", yieldPerAcre: 2500, discount: 0, gst: 0 },
+  "Rice": { price: 45, unit: "Kilogram (Kg)", demand: "Very High", trend: "Stable", yieldPerAcre: 1500, discount: 0, gst: 5 },
+  "Sugarcane": { price: 3, unit: "Kilogram (Kg)", demand: "High", trend: "Stable", yieldPerAcre: 40000, discount: 0, gst: 0 },
+  "Cotton": { price: 70, unit: "Kilogram (Kg)", demand: "High", trend: "Rising", yieldPerAcre: 800, discount: 5, gst: 5 },
+  "Tomato": { price: 30, unit: "Kilogram (Kg)", demand: "Very High", trend: "Volatile", yieldPerAcre: 10000, discount: 5, gst: 5 },
+  "Potato": { price: 20, unit: "Kilogram (Kg)", demand: "High", trend: "Stable", yieldPerAcre: 8000, discount: 0, gst: 5 },
+  "Onion": { price: 40, unit: "Kilogram (Kg)", demand: "High", trend: "Volatile", yieldPerAcre: 6000, discount: 5, gst: 5 },
+  "Carrot": { price: 35, unit: "Kilogram (Kg)", demand: "Medium", trend: "Stable", yieldPerAcre: 5000, discount: 5, gst: 5 },
+  "Brinjal": { price: 25, unit: "Kilogram (Kg)", demand: "Medium", trend: "Falling", yieldPerAcre: 7000, discount: 10, gst: 5 },
+  "Chilli": { price: 120, unit: "Kilogram (Kg)", demand: "High", trend: "Rising", yieldPerAcre: 1000, discount: 0, gst: 5 },
+  "Maize": { price: 22, unit: "Kilogram (Kg)", demand: "High", trend: "Stable", yieldPerAcre: 2500, discount: 2, gst: 5 },
+  "Millets": { price: 40, unit: "Kilogram (Kg)", demand: "Rising", trend: "Rising", yieldPerAcre: 1200, discount: 0, gst: 0 },
+  "Banana": { price: 15, unit: "Kilogram (Kg)", demand: "Very High", trend: "Stable", yieldPerAcre: 15000, discount: 0, gst: 0 },
+  "Coconut": { price: 25, unit: "Pieces", demand: "High", trend: "Stable", yieldPerAcre: 4000, discount: 0, gst: 0 },
+  "Mango": { price: 60, unit: "Kilogram (Kg)", demand: "Seasonal", trend: "Volatile", yieldPerAcre: 4000, discount: 5, gst: 5 },
+  "Other Crops": { price: 50, unit: "Kilogram (Kg)", demand: "Medium", trend: "Stable", yieldPerAcre: 2000, discount: 0, gst: 5 }
+};
 
 const MarketValueEstimatorTab = ({ activeFarm }) => {
   const [selectedCrop, setSelectedCrop] = useState('');
