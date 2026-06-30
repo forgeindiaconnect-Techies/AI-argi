@@ -12,8 +12,10 @@ try {
 }
 
 const cropRoutes = require("./routes/cropRoutes");
+const connectDB = require("./config/db");
 
 dotenv.config();
+connectDB();
 
 const app = express();
 
@@ -24,9 +26,11 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || "dummy_key",
 });
 
-// Crop dataset routes
+// Application routes
 app.use("/api/crops", cropRoutes);
 app.use("/api/weather", require("./routes/weatherRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 // Chatbot route
 app.post("/ask", async (req, res) => {

@@ -34,7 +34,15 @@ const Register = () => {
     };
 
     // Save to local user management storage so Admin Dashboard displays it instantly
-    const existingUsers = JSON.parse(localStorage.getItem('sams_users') || '[]');
+    let existingUsers = JSON.parse(localStorage.getItem('sams_users') || 'null');
+    if (!existingUsers) {
+      existingUsers = [
+        { id: 'f_1', _id: 'f_1', name: 'Rajesh Kumar', email: 'rajesh.k@gmail.com', role: 'Farmer', status: 'Active', joinDate: '2026-06-15' },
+        { id: 'f_2', _id: 'f_2', name: 'Suresh Reddy', email: 'suresh.r@agri.com', role: 'Farmer', status: 'Active', joinDate: '2026-06-18' },
+        { id: 'f_3', _id: 'f_3', name: 'Anita Patel', email: 'anita.p@farms.in', role: 'Farmer', status: 'Pending', joinDate: '2026-06-20' },
+        { id: 'f_4', _id: 'f_4', name: 'Vikram Singh', email: 'vikram.s@kisan.org', role: 'Farmer', status: 'Active', joinDate: '2026-06-22' }
+      ];
+    }
     const filteredUsers = existingUsers.filter(u => u.email.toLowerCase() !== email.toLowerCase());
     localStorage.setItem('sams_users', JSON.stringify([newUser, ...filteredUsers]));
 
