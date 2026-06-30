@@ -73,6 +73,25 @@ const ChatbotTab = ({ activeFarm }) => {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  // ─── Push a notification to the admin panel ───
+  const sendAdminNotification = (question, reply) => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const farmerName = userInfo.name || activeFarm?.name || 'A Farmer';
+    const existing = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
+    const newNotif = {
+      id: Date.now(),
+      type: 'chat',
+      isRead: false,
+      farmerName,
+      question: question.slice(0, 120),
+      aiReply: reply.replace(/\*\*/g, '').slice(0, 200),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toLocaleDateString(),
+      timestamp: Date.now()
+    };
+    localStorage.setItem('sams_admin_notifications', JSON.stringify([newNotif, ...existing].slice(0, 50)));
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -182,12 +201,15 @@ const ChatbotTab = ({ activeFarm }) => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiResponse]);
+      sendAdminNotification(userMsg.text, aiResponse.text);
     } catch (error) {
+      const fallbackText = getLocalAIResponse(input, language);
       setMessages(prev => [...prev, {
         sender: 'ai',
-        text: getLocalAIResponse(input, language),
+        text: fallbackText,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
+      sendAdminNotification(userMsg.text, fallbackText);
     } finally {
       setIsTyping(false);
     }
