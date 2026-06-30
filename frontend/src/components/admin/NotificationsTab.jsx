@@ -21,20 +21,9 @@ const NotificationsTab = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Notification Center</h2>
-        <button className="btn-primary flex items-center gap-2 text-sm bg-agri-earth hover:bg-agri-earth-dark">
-          <Send className="w-4 h-4" /> New Broadcast
-        </button>
       </div>
 
-      <div className="card p-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search notifications..." 
-            className="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-agri-green"
-          />
-        </div>
+      <div className="card p-4 flex justify-end items-center bg-gray-50 dark:bg-gray-800/50">
         <button onClick={handleMarkAllRead} className="text-sm text-agri-green font-medium hover:underline flex items-center gap-1">
           <CheckCircle className="w-4 h-4"/> Mark all as handled
         </button>
