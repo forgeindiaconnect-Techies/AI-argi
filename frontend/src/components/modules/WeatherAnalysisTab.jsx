@@ -71,6 +71,24 @@ const WeatherAnalysisTab = ({ activeFarm }) => {
           };
         });
         setForecastData(dynamicForecast);
+
+        // Auto-sync to admin localStorage on every successful weather fetch
+        const report = {
+          farmName: activeFarm?.name || 'My Farm',
+          district,
+          dateSynced: new Date().toISOString(),
+          forecast: dynamicForecast,
+          current: {
+            temperature: temp,
+            humidity: hum,
+            windSpeed: wind,
+            rainProb: rain,
+            condition: cond,
+            description: desc
+          }
+        };
+        localStorage.setItem('sams_weather_data', JSON.stringify(report));
+
       } else {
         console.warn("Weather fetch failed, retaining defaults");
       }
