@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Download, FileText, Calendar, Filter, ChevronDown, PieChart } from 'lucide-react';
+import { Download, FileText, Calendar, Filter, ChevronDown, PieChart, CloudUpload, CheckCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import api from '../../config/api';
 
 const yieldHistoryData = [
   { year: '2022', Tomato: 12, Cotton: 0, Groundnut: 4 },
@@ -11,6 +12,51 @@ const yieldHistoryData = [
 
 const ReportsHistoryTab = ({ activeFarm }) => {
   const [dateRange, setDateRange] = useState('Last 12 Months');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+
+  const handleSyncToCloud = async () => {
+    setIsSyncing(true);
+    setSyncSuccess(false);
+
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const userId = userInfo._id || 'local-user';
+      const syncedBy = userInfo.name || 'Farmer';
+
+      // Gather all local dashboard data
+      const farms = JSON.parse(localStorage.getItem('sams_farms') || '[]');
+      const soilReports = JSON.parse(localStorage.getItem('sams_soil_reports') || '[]');
+      const weatherData = JSON.parse(localStorage.getItem('sams_weather_data') || '{}');
+
+      // Add yield history to local storage so admin can read it if needed
+      localStorage.setItem('sams_yield_history', JSON.stringify(yieldHistoryData));
+
+      const payload = {
+        userId,
+        syncedBy,
+        farms,
+        soilReports,
+        weatherData,
+        yieldHistory: yieldHistoryData
+      };
+
+      // Also store full backup locally just in case
+      localStorage.setItem('sams_cloud_sync_backup', JSON.stringify(payload));
+
+      const res = await api.post('/api/sync', payload);
+      
+      if (res.status === 200 || res.status === 201) {
+        setSyncSuccess(true);
+        setTimeout(() => setSyncSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error('Error syncing to cloud:', error);
+      alert('Failed to sync to cloud database. Please try again.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleDownloadPDF = (row) => {
     const printWindow = window.open('', '_blank');
@@ -67,8 +113,25 @@ const ReportsHistoryTab = ({ activeFarm }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-2 flex-wrap gap-4">
-        <h3 className="text-xl font-bold">Reports & History</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-xl font-bold">Reports & History</h3>
+          {syncSuccess && (
+            <span className="flex items-center gap-1 text-sm text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+              <CheckCircle className="w-4 h-4" /> Synced to Admin & Cloud!
+            </span>
+          )}
+        </div>
         <div className="flex gap-2">
+          <button 
+            onClick={handleSyncToCloud} 
+            disabled={isSyncing}
+            className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg font-medium transition-colors ${
+              isSyncing ? 'bg-blue-300 text-white cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            <CloudUpload className="w-4 h-4"/> 
+            {isSyncing ? 'Syncing...' : 'Sync to Cloud & Admin'}
+          </button>
           <button onClick={() => alert("Opening advanced filter options...")} className="btn-outline flex items-center gap-2 text-sm bg-white dark:bg-gray-800">
             <Filter className="w-4 h-4"/> Filter
           </button>

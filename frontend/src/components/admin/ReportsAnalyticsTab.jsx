@@ -1,43 +1,154 @@
-import React, { useState } from 'react';
-import { FileText, Download, Filter, BarChart2, PieChart, Users, Map } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Filter, BarChart2, PieChart, Users, Map, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import api from '../../config/api';
 
-const cropPerformanceData = [
-  { name: 'Tomato', target: 120, actual: 110 },
-  { name: 'Cotton', target: 200, actual: 215 },
-  { name: 'Wheat', target: 300, actual: 280 },
-  { name: 'Rice', target: 250, actual: 260 },
-];
-
-const yieldReportData = [
-  { id: 'YR-2025-01', crop: 'Tomato', season: 'Kharif', area: '120 Acres', totalYield: '450 Tons', variance: '+5%' },
-  { id: 'YR-2025-02', crop: 'Cotton', season: 'Kharif', area: '300 Acres', totalYield: '850 Tons', variance: '+12%' },
-  { id: 'YR-2025-03', crop: 'Wheat', season: 'Rabi', area: '250 Acres', totalYield: '600 Tons', variance: '-2%' },
-];
-
-const soilReportData = [
-  { testId: 'SR-1092', region: 'North Acre', ph: 6.5, nitrogen: 'Optimal', phosphorus: 'Low', moisture: '34%' },
-  { testId: 'SR-1093', region: 'East Valley', ph: 7.1, nitrogen: 'High', phosphorus: 'Optimal', moisture: '28%' },
-  { testId: 'SR-1094', region: 'South Plains', ph: 5.8, nitrogen: 'Low', phosphorus: 'Low', moisture: '45%' },
-];
-
-const weatherReportData = [
-  { month: 'January', avgTemp: '22°C', rainfall: '45mm', humidity: '60%' },
-  { month: 'February', avgTemp: '25°C', rainfall: '30mm', humidity: '55%' },
-  { month: 'March', avgTemp: '30°C', rainfall: '60mm', humidity: '50%' },
-  { month: 'April', avgTemp: '34°C', rainfall: '15mm', humidity: '45%' },
-];
-
-const farmerReportData = [
-  { id: 'FRM-101', name: 'John Doe', region: 'North', yield: '14.5 Tons', status: 'Top Performer' },
-  { id: 'FRM-102', name: 'Alice Smith', region: 'South', yield: '12.0 Tons', status: 'Average' },
-  { id: 'FRM-103', name: 'Bob Johnson', region: 'East', yield: '8.2 Tons', status: 'Needs Support' },
-];
+// Remove hardcoded static arrays, will replace with state.
 
 const ReportsAnalyticsTab = () => {
   const [activeTab, setActiveTab] = useState('Crop Performance');
+  const [syncData, setSyncData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchSyncData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/api/sync');
+      setSyncData(res.data);
+    } catch (error) {
+      console.error('Error fetching synced data:', error);
+      // Fallback to local storage if API fails
+      const localBackup = JSON.parse(localStorage.getItem('sams_cloud_sync_backup') || 'null');
+      if (localBackup) setSyncData([localBackup]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSyncData();
+  }, []);
 
   const tabs = ['Crop Performance', 'Yield Reports', 'Farmer Reports', 'Soil Reports', 'Weather Reports'];
+
+  // Process data for charts and tables dynamically based on syncData
+  
+  // 1. Crop Performance (Yield History from syncData)
+  const cropPerformanceData = [];
+  syncData.forEach(userSync => {
+    if (userSync.yieldHistory) {
+      userSync.yieldHistory.forEach(history => {
+        ['Tomato', 'Cotton', 'Groundnut', 'Wheat', 'Rice'].forEach(crop => {
+          if (history[crop]) {
+            const existing = cropPerformanceData.find(c => c.name === crop);
+            if (existing) {
+              existing.actual += history[crop];
+              existing.target += history[crop] * 0.9; // Just an estimate target for demo
+            } else {
+              cropPerformanceData.push({ name: crop, target: history[crop] * 0.9, actual: history[crop] });
+            }
+          }
+        });
+      });
+    }
+  });
+
+  // Default fallback if empty
+  if (cropPerformanceData.length === 0) {
+    cropPerformanceData.push(
+      { name: 'Tomato', target: 120, actual: 110 },
+      { name: 'Cotton', target: 200, actual: 215 },
+      { name: 'Wheat', target: 300, actual: 280 },
+      { name: 'Rice', target: 250, actual: 260 }
+    );
+  }
+
+  // 2. Yield Reports (flattening all yield history)
+  let yieldReportData = [];
+  syncData.forEach(userSync => {
+    if (userSync.yieldHistory) {
+      userSync.yieldHistory.forEach((h, i) => {
+        yieldReportData.push({
+          id: `YR-${h.year}-${i}`,
+          crop: 'Mixed', // Simplified
+          season: 'Kharif/Rabi',
+          area: 'Varies',
+          totalYield: `${(h.Tomato || 0) + (h.Cotton || 0) + (h.Groundnut || 0)} Tons`,
+          variance: '+5%'
+        });
+      });
+    }
+  });
+  if (yieldReportData.length === 0) {
+    yieldReportData = [
+      { id: 'YR-2025-01', crop: 'Tomato', season: 'Kharif', area: '120 Acres', totalYield: '450 Tons', variance: '+5%' }
+    ];
+  }
+
+  // 3. Farmer Reports
+  let farmerReportData = [];
+  syncData.forEach((userSync, index) => {
+    let totalYield = 0;
+    if (userSync.yieldHistory) {
+      userSync.yieldHistory.forEach(h => {
+        totalYield += (h.Tomato || 0) + (h.Cotton || 0) + (h.Groundnut || 0);
+      });
+    }
+    farmerReportData.push({
+      id: `FRM-10${index + 1}`,
+      name: userSync.syncedBy || 'Unknown Farmer',
+      region: userSync.weatherData?.district || 'Unknown Region',
+      yield: `${totalYield} Tons`,
+      status: totalYield > 50 ? 'Top Performer' : 'Average'
+    });
+  });
+  if (farmerReportData.length === 0) {
+    farmerReportData = [
+      { id: 'FRM-101', name: 'John Doe', region: 'North', yield: '14.5 Tons', status: 'Top Performer' }
+    ];
+  }
+
+  // 4. Soil Reports
+  let soilReportData = [];
+  syncData.forEach(userSync => {
+    if (userSync.soilReports) {
+      userSync.soilReports.forEach(report => {
+        soilReportData.push({
+          testId: report.id,
+          region: report.farmName,
+          ph: 6.5, // placeholder
+          nitrogen: report.nutrients?.nitrogen > 100 ? 'Optimal' : 'Low',
+          phosphorus: report.nutrients?.phosphorus > 80 ? 'Optimal' : 'Low',
+          moisture: '34%'
+        });
+      });
+    }
+  });
+  if (soilReportData.length === 0) {
+    soilReportData = [
+      { testId: 'SR-1092', region: 'North Acre', ph: 6.5, nitrogen: 'Optimal', phosphorus: 'Low', moisture: '34%' }
+    ];
+  }
+
+  // 5. Weather Reports (flatten forecast data from weatherData)
+  let weatherReportData = [];
+  syncData.forEach(userSync => {
+    if (userSync.weatherData?.forecast) {
+      userSync.weatherData.forecast.slice(0, 4).forEach((dayData, idx) => {
+        weatherReportData.push({
+          month: dayData.day, // Reusing day as month/period
+          avgTemp: `${dayData.tempMax}°C`,
+          rainfall: `${dayData.rain}% Prob`,
+          humidity: `${userSync.weatherData.current?.humidity || 50}%`
+        });
+      });
+    }
+  });
+  if (weatherReportData.length === 0) {
+    weatherReportData = [
+      { month: 'January', avgTemp: '22°C', rainfall: '45mm', humidity: '60%' }
+    ];
+  }
 
   const handleDownload = (format) => {
     if (format === 'pdf') {
@@ -86,6 +197,9 @@ const ReportsAnalyticsTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Reports & Analytics</h2>
         <div className="flex gap-2 w-full sm:w-auto">
+          <button onClick={fetchSyncData} className="btn-outline flex items-center gap-2 text-sm bg-white dark:bg-gray-800">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh Data
+          </button>
           <div className="flex gap-2 flex-1 sm:flex-none">
             <button onClick={() => handleDownload('pdf')} className="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-2 text-sm">
               <Download className="w-4 h-4"/> PDF

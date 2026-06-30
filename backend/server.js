@@ -31,6 +31,7 @@ app.use("/api/crops", cropRoutes);
 app.use("/api/weather", require("./routes/weatherRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/sync", require("./routes/syncRoutes"));
 
 // Chatbot route
 app.post("/ask", async (req, res) => {
