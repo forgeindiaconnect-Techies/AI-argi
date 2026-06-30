@@ -1,8 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Leaf, Mail, Phone, MapPin, Send } from 'lucide-react';
+import { ChevronLeft, Leaf, Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.firstName || !formData.email || !formData.message) return;
+
+    setIsSubmitting(true);
+    
+    // Simulate network request
+    setTimeout(() => {
+      // Send notification to admin dashboard
+      const existingNotifs = JSON.parse(localStorage.getItem('sams_admin_notifications') || '[]');
+      const newNotif = {
+        id: Date.now(),
+        type: 'contact_inquiry',
+        title: `New Inquiry from ${formData.firstName} ${formData.lastName}`,
+        message: `Email: ${formData.email}\nMessage: ${formData.message}`,
+        isRead: false,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: new Date().toLocaleDateString(),
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem('sams_admin_notifications', JSON.stringify([newNotif, ...existingNotifs].slice(0, 50)));
+
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      setFormData({ firstName: '', lastName: '', email: '', message: '' });
+      
+      setTimeout(() => setIsSuccess(false), 5000);
+    }, 800);
+  };
+
   return (
     <div className="min-h-screen bg-agri-bg-light dark:bg-agri-bg-dark text-gray-800 dark:text-gray-200">
       {/* Navigation */}
@@ -69,27 +114,72 @@ const Contact = () => {
             {/* Contact Form */}
             <div className="bg-white dark:bg-agri-bg-darkSurface p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800">
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Send a Message</h3>
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                    <input type="text" className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" placeholder="John" />
+                    <input 
+                      type="text" 
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" 
+                      placeholder="John" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
-                    <input type="text" className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" placeholder="Doe" />
+                    <input 
+                      type="text" 
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" 
+                      placeholder="Doe" 
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
-                  <input type="email" className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" placeholder="john@example.com" />
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white" 
+                    placeholder="john@example.com" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
-                  <textarea rows="4" className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white resize-none" placeholder="How can we help you?"></textarea>
+                  <textarea 
+                    rows="4" 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-agri-green outline-none transition-all text-gray-900 dark:text-white resize-none" 
+                    placeholder="How can we help you?"
+                  ></textarea>
                 </div>
-                <button type="submit" className="w-full btn-primary py-4 rounded-xl text-lg font-bold flex items-center justify-center gap-2 hover:-translate-y-1 transition-transform">
-                  Send Message <Send className="w-5 h-5" />
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting || isSuccess}
+                  className={`w-full py-4 rounded-xl text-lg font-bold flex items-center justify-center gap-2 transition-all duration-300 ${
+                    isSuccess 
+                      ? 'bg-green-500 text-white cursor-default' 
+                      : 'btn-primary hover:-translate-y-1'
+                  }`}
+                >
+                  {isSubmitting ? (
+                    'Sending...'
+                  ) : isSuccess ? (
+                    <>Message Sent! <CheckCircle className="w-5 h-5" /></>
+                  ) : (
+                    <>Send Message <Send className="w-5 h-5" /></>
+                  )}
                 </button>
               </form>
             </div>

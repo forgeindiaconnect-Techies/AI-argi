@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, MessageSquare, Monitor, CheckCircle, User, Bot, Trash2 } from 'lucide-react';
+import { Bell, MessageSquare, Monitor, CheckCircle, User, Bot, Trash2, Mail } from 'lucide-react';
 
 const NotificationsTab = () => {
   const [adminNotifs, setAdminNotifs] = useState([]);
@@ -83,9 +83,11 @@ const NotificationsTab = () => {
                   <div className={`p-2 rounded-full shrink-0 ${
                     isChatNotif
                       ? (!notif.isRead ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400')
-                      : (!notif.isRead ? 'bg-agri-green/20 text-agri-green' : 'bg-gray-100 text-gray-400')
+                      : notif.type === 'contact_inquiry'
+                        ? (!notif.isRead ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400')
+                        : (!notif.isRead ? 'bg-agri-green/20 text-agri-green' : 'bg-gray-100 text-gray-400')
                   }`}>
-                    {isChatNotif ? <MessageSquare className="w-5 h-5"/> : <Bell className="w-5 h-5"/>}
+                    {isChatNotif ? <MessageSquare className="w-5 h-5"/> : notif.type === 'contact_inquiry' ? <Mail className="w-5 h-5"/> : <Bell className="w-5 h-5"/>}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -127,7 +129,7 @@ const NotificationsTab = () => {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 mt-1">{notif.message}</p>
+                      <p className="text-sm text-gray-500 mt-1 whitespace-pre-wrap">{notif.message}</p>
                     )}
 
                     {/* Actions */}
