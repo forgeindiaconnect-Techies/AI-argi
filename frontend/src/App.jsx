@@ -19,6 +19,9 @@ import HelpCenter from './pages/HelpCenter';
 import ApiDocs from './pages/ApiDocs';
 import Community from './pages/Community';
 import SystemStatus from './pages/SystemStatus';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import CookieSettings from './pages/CookieSettings';
 
 function App() {
   return (
@@ -44,6 +47,9 @@ function App() {
           <Route path="/api-docs" element={<ApiDocs />} />
           <Route path="/community" element={<Community />} />
           <Route path="/system-status" element={<SystemStatus />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/cookie-settings" element={<CookieSettings />} />
         </Routes>
       </div>
     </Router>
