@@ -13,13 +13,17 @@ const ReportsAnalyticsTab = () => {
   const fetchSyncData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sync`);
+      const fetchPromise = fetch(`${API_BASE_URL}/api/sync`);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request Timeout')), 1500)
+      );
+      
+      const res = await Promise.race([fetchPromise, timeoutPromise]);
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       setSyncData(data);
     } catch (error) {
-      console.error('Error fetching synced data:', error);
-      // Fallback to local storage if API fails
+      // Fallback silently to local storage if API fails or times out
       const localBackup = JSON.parse(localStorage.getItem('sams_cloud_sync_backup') || 'null');
       if (localBackup) setSyncData([localBackup]);
     } finally {

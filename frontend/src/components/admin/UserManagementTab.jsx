@@ -32,7 +32,7 @@ const UserManagementTab = () => {
     }
 
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/users`, { timeout: 6000 });
+      const { data } = await axios.get(`${API_BASE_URL}/api/users`, { timeout: 1500 });
       const formattedApi = data.map(u => ({
         ...u,
         id: u._id || u.id,
@@ -49,7 +49,7 @@ const UserManagementTab = () => {
       setFarmers(combined);
       localStorage.setItem('sams_users', JSON.stringify(combined));
     } catch (error) {
-      console.warn('API error fetching users, loading from local management store:', error.message);
+      // Fallback silently to local management store
       setFarmers(localUsers);
     }
   };
@@ -69,10 +69,10 @@ const UserManagementTab = () => {
     if (currentFarmer.id && !currentFarmer.id.toString().startsWith('temp_')) {
       // Edit existing
       try {
-        const { data } = await axios.put(`${API_BASE_URL}/api/users/${currentFarmer.id}`, currentFarmer, { timeout: 6000 });
+        const { data } = await axios.put(`${API_BASE_URL}/api/users/${currentFarmer.id}`, currentFarmer, { timeout: 1500 });
         targetUser = { ...targetUser, ...data, id: data._id || currentFarmer.id };
       } catch (error) {
-        console.warn('API edit failed, updating local state:', error.message);
+        // Fallback silently
       }
       updatedList = farmers.map(f => f.id === currentFarmer.id ? targetUser : f);
     } else {
@@ -91,10 +91,10 @@ const UserManagementTab = () => {
           ...currentFarmer,
           password: 'password123',
           role: 'Farmer'
-        }, { timeout: 6000 });
+        }, { timeout: 1500 });
         targetUser = { ...targetUser, ...data, id: data._id || targetUser.id };
       } catch (error) {
-        console.warn('API register failed, saving locally:', error.message);
+        // Fallback silently
       }
       updatedList = [targetUser, ...farmers];
 
@@ -118,9 +118,9 @@ const UserManagementTab = () => {
 
   const deleteFarmer = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/users/${id}`, { timeout: 6000 });
+      await axios.delete(`${API_BASE_URL}/api/users/${id}`, { timeout: 1500 });
     } catch (error) {
-      console.warn('API delete failed, removing locally:', error.message);
+      // Fallback silently
     }
     const updatedList = farmers.filter(f => f.id !== id);
     setFarmers(updatedList);
