@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const navGroups = [

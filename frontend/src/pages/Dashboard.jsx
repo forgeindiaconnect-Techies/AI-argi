@@ -51,7 +51,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const navGroups = [
