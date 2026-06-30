@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Shield, Users, Map, Sprout, Database, LogOut,
-  Activity, Bell, Settings, PieChart, Menu, X
+  Activity, Bell, Settings, PieChart, Menu, X,
+  LayoutDashboard, CloudSun, Bot, FileBarChart, MessageSquare
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,14 +41,39 @@ const AdminDashboard = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { name: 'Dashboard', icon: <PieChart className="w-5 h-5"/> },
-    { name: 'User Management', icon: <Users className="w-5 h-5"/> },
-    { name: 'Farm & Crop Management', icon: <Sprout className="w-5 h-5"/> },
-    { name: 'Soil & Weather Monitoring', icon: <Map className="w-5 h-5"/> },
-    { name: 'AI Analytics', icon: <Activity className="w-5 h-5"/> },
-    { name: 'Reports & Analytics', icon: <Database className="w-5 h-5"/> },
-    { name: 'Notifications Center', icon: <Bell className="w-5 h-5"/> },
+  const navGroups = [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5"/> },
+      ]
+    },
+    {
+      title: 'User & Farm',
+      items: [
+        { name: 'User Management', icon: <Users className="w-5 h-5"/> },
+        { name: 'Farm & Crop Management', icon: <Sprout className="w-5 h-5"/> },
+      ]
+    },
+    {
+      title: 'Monitoring',
+      items: [
+        { name: 'Soil & Weather Monitoring', icon: <CloudSun className="w-5 h-5"/> },
+        { name: 'AI Analytics', icon: <Activity className="w-5 h-5"/> },
+      ]
+    },
+    {
+      title: 'Reports',
+      items: [
+        { name: 'Reports & Analytics', icon: <FileBarChart className="w-5 h-5"/> },
+      ]
+    },
+    {
+      title: 'System',
+      items: [
+        { name: 'Notifications Center', icon: <Bell className="w-5 h-5"/> },
+      ]
+    }
   ];
 
   const renderTab = () => {
@@ -91,23 +117,29 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto hide-scrollbar">
-          <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Core Modules</p>
-          {navItems.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => { setActiveTab(item.name); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                activeTab === item.name 
-                ? 'bg-[#2E7D32]/20 text-[#4CAF50] shadow-sm font-medium' 
-                : 'hover:bg-white/5 hover:text-white text-gray-400 font-medium'
-              }`}
-            >
-              <div className={`${activeTab === item.name ? 'text-[#4CAF50]' : 'text-gray-500'}`}>
-                {item.icon}
+        <nav className="flex-1 px-4 py-6 overflow-y-auto hide-scrollbar">
+          {navGroups.map((group, groupIndex) => (
+            <div key={group.title} className={`${groupIndex > 0 ? 'mt-6' : ''}`}>
+              <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{group.title}</p>
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => { setActiveTab(item.name); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      activeTab === item.name 
+                      ? 'bg-[#2E7D32]/20 text-[#4CAF50] shadow-sm font-medium' 
+                      : 'hover:bg-white/5 hover:text-white text-gray-400 font-medium'
+                    }`}
+                  >
+                    <div className={`${activeTab === item.name ? 'text-[#4CAF50]' : 'text-gray-500'}`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-sm">{item.name}</span>
+                  </button>
+                ))}
               </div>
-              <span>{item.name}</span>
-            </button>
+            </div>
           ))}
         </nav>
 
