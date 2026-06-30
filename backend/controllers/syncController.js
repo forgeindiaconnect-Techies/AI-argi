@@ -5,7 +5,7 @@ const DashboardSync = require('../models/DashboardSync');
 // @access  Public (for now)
 const syncDashboardData = async (req, res) => {
   try {
-    const { userId, syncedBy, farms, soilReports, weatherData, yieldHistory } = req.body;
+    const { userId, syncedBy, farms, soilReports, weatherData, yieldHistory, aiReports } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: 'userId is required for syncing' });
@@ -21,6 +21,7 @@ const syncDashboardData = async (req, res) => {
       syncData.soilReports = soilReports || syncData.soilReports;
       syncData.weatherData = weatherData || syncData.weatherData;
       syncData.yieldHistory = yieldHistory || syncData.yieldHistory;
+      syncData.aiReports = aiReports || syncData.aiReports;
       syncData.lastSync = Date.now();
       
       const updatedSync = await syncData.save();
@@ -34,6 +35,7 @@ const syncDashboardData = async (req, res) => {
         soilReports,
         weatherData,
         yieldHistory,
+        aiReports,
         lastSync: Date.now()
       });
       

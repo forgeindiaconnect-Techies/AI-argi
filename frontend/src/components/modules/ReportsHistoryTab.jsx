@@ -15,6 +15,23 @@ const ReportsHistoryTab = ({ activeFarm }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
 
+  const aiReports = [
+    { date: 'Oct 15, 2025', type: 'Suitability Analysis', crop: 'Cotton', risk: 'Low', riskColor: 'text-green-600 bg-green-100' },
+    { date: 'Sep 02, 2025', type: 'Pest Prediction', crop: 'Tomato', risk: 'High', riskColor: 'text-red-600 bg-red-100' },
+    { date: 'Jun 20, 2025', type: 'Soil Health Scan', crop: 'All', risk: 'Moderate', riskColor: 'text-yellow-600 bg-yellow-100' },
+    { date: 'May 10, 2025', type: 'Irrigation Strategy', crop: 'Groundnut', risk: 'Low', riskColor: 'text-green-600 bg-green-100' }
+  ];
+  
+  if (activeFarm?.aiReport) {
+    aiReports.unshift({
+      date: new Date(activeFarm.aiReport.date).toLocaleDateString(),
+      type: 'AI Crop Planning',
+      crop: activeFarm.aiReport.bestCrop.name,
+      risk: activeFarm.aiReport.bestCrop.riskLevel,
+      riskColor: activeFarm.aiReport.bestCrop.riskLevel === 'Low' ? 'text-green-600 bg-green-100' : 'text-yellow-600 bg-yellow-100'
+    });
+  }
+
   const handleSyncToCloud = async () => {
     setIsSyncing(true);
     setSyncSuccess(false);
@@ -38,7 +55,8 @@ const ReportsHistoryTab = ({ activeFarm }) => {
         farms,
         soilReports,
         weatherData,
-        yieldHistory: yieldHistoryData
+        yieldHistory: yieldHistoryData,
+        aiReports
       };
 
       // Also store full backup locally just in case
@@ -238,42 +256,23 @@ const ReportsHistoryTab = ({ activeFarm }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
-              {(() => {
-                const existingReports = [
-                  { date: 'Oct 15, 2025', type: 'Suitability Analysis', crop: 'Cotton', risk: 'Low', riskColor: 'text-green-600 bg-green-100' },
-                  { date: 'Sep 02, 2025', type: 'Pest Prediction', crop: 'Tomato', risk: 'High', riskColor: 'text-red-600 bg-red-100' },
-                  { date: 'Jun 20, 2025', type: 'Soil Health Scan', crop: 'All', risk: 'Moderate', riskColor: 'text-yellow-600 bg-yellow-100' },
-                  { date: 'May 10, 2025', type: 'Irrigation Strategy', crop: 'Groundnut', risk: 'Low', riskColor: 'text-green-600 bg-green-100' }
-                ];
-                
-                if (activeFarm?.aiReport) {
-                  existingReports.unshift({
-                    date: new Date(activeFarm.aiReport.date).toLocaleDateString(),
-                    type: 'AI Crop Planning',
-                    crop: activeFarm.aiReport.bestCrop.name,
-                    risk: activeFarm.aiReport.bestCrop.riskLevel,
-                    riskColor: activeFarm.aiReport.bestCrop.riskLevel === 'Low' ? 'text-green-600 bg-green-100' : 'text-yellow-600 bg-yellow-100'
-                  });
-                }
-                
-                return existingReports.map((row, i) => (
-                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{row.date}</td>
-                    <td className="p-4 font-medium">{row.type}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{row.crop}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${row.riskColor}`}>
-                        {row.risk}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button onClick={() => handleDownloadPDF(row)} className="text-agri-green hover:text-agri-green-dark inline-flex items-center gap-1">
-                        <Download className="w-4 h-4"/> PDF
-                      </button>
-                    </td>
-                  </tr>
-                ));
-              })()}
+              {aiReports.map((row, i) => (
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <td className="p-4 text-gray-600 dark:text-gray-300">{row.date}</td>
+                  <td className="p-4 font-medium">{row.type}</td>
+                  <td className="p-4 text-gray-600 dark:text-gray-300">{row.crop}</td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${row.riskColor}`}>
+                      {row.risk}
+                    </span>
+                  </td>
+                  <td className="p-4 text-right">
+                    <button onClick={() => handleDownloadPDF(row)} className="text-agri-green hover:text-agri-green-dark inline-flex items-center gap-1">
+                      <Download className="w-4 h-4"/> PDF
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

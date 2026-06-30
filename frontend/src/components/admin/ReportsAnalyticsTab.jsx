@@ -31,7 +31,7 @@ const ReportsAnalyticsTab = () => {
     fetchSyncData();
   }, []);
 
-  const tabs = ['Crop Performance', 'Yield Reports', 'Farmer Reports', 'Soil Reports', 'Weather Reports'];
+  const tabs = ['Crop Performance', 'Yield Reports', 'Farmer Reports', 'Soil Reports', 'Weather Reports', 'AI Reports'];
 
   // Process data for charts and tables dynamically based on syncData
   
@@ -149,6 +149,28 @@ const ReportsAnalyticsTab = () => {
   if (weatherReportData.length === 0) {
     weatherReportData = [
       { month: 'January', avgTemp: '22°C', rainfall: '45mm', humidity: '60%' }
+    ];
+  }
+
+  // 6. AI Reports
+  let aiReportData = [];
+  syncData.forEach(userSync => {
+    if (userSync.aiReports) {
+      userSync.aiReports.forEach(report => {
+        aiReportData.push({
+          date: report.date,
+          type: report.type,
+          crop: report.crop,
+          risk: report.risk,
+          riskColor: report.riskColor,
+          farmerName: userSync.syncedBy || 'Unknown Farmer'
+        });
+      });
+    }
+  });
+  if (aiReportData.length === 0) {
+    aiReportData = [
+      { date: 'Oct 15, 2025', type: 'Suitability Analysis', crop: 'Cotton', risk: 'Low', riskColor: 'text-green-600 bg-green-100', farmerName: 'System Default' }
     ];
   }
 
@@ -364,8 +386,8 @@ const ReportsAnalyticsTab = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
-              {weatherReportData.map(report => (
-                <tr key={report.month} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              {weatherReportData.map((report, i) => (
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="p-4 font-medium">{report.month}</td>
                   <td className="p-4 text-gray-700 dark:text-gray-300 font-bold">{report.avgTemp}</td>
                   <td className="p-4 text-blue-600 font-bold">{report.rainfall}</td>
@@ -374,6 +396,48 @@ const ReportsAnalyticsTab = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {activeTab === 'AI Reports' && (
+        <div className="card p-0 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+            <h4 className="font-bold">Recent AI Analysis Reports</h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-800 text-gray-500 text-sm">
+                  <th className="p-4 font-medium">Date</th>
+                  <th className="p-4 font-medium">Farmer</th>
+                  <th className="p-4 font-medium">Report Type</th>
+                  <th className="p-4 font-medium">Crop Context</th>
+                  <th className="p-4 font-medium">Risk Level</th>
+                  <th className="p-4 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
+                {aiReportData.map((row, i) => (
+                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td className="p-4 text-gray-600 dark:text-gray-300">{row.date}</td>
+                    <td className="p-4 font-medium">{row.farmerName}</td>
+                    <td className="p-4 font-medium text-blue-600">{row.type}</td>
+                    <td className="p-4 text-gray-600 dark:text-gray-300">{row.crop}</td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${row.riskColor}`}>
+                        {row.risk}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button onClick={() => window.print()} className="text-agri-green hover:text-agri-green-dark inline-flex items-center gap-1">
+                        <Download className="w-4 h-4"/> PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

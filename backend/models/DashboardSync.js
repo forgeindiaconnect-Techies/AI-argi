@@ -26,6 +26,10 @@ const dashboardSyncSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
+  aiReports: {
+    type: Array,
+    default: []
+  },
   lastSync: {
     type: Date,
     default: Date.now
