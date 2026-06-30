@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, FileText, Calendar, Filter, ChevronDown, PieChart, CloudUpload, CheckCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import api from '../../config/api';
+import { API_BASE_URL } from '../../config/api';
 
 const yieldHistoryData = [
   { year: '2022', Tomato: 12, Cotton: 0, Groundnut: 4 },
@@ -44,11 +44,17 @@ const ReportsHistoryTab = ({ activeFarm }) => {
       // Also store full backup locally just in case
       localStorage.setItem('sams_cloud_sync_backup', JSON.stringify(payload));
 
-      const res = await api.post('/api/sync', payload);
+      const res = await fetch(`${API_BASE_URL}/api/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
       
-      if (res.status === 200 || res.status === 201) {
+      if (res.ok) {
         setSyncSuccess(true);
         setTimeout(() => setSyncSuccess(false), 3000);
+      } else {
+        throw new Error('Failed to sync');
       }
     } catch (error) {
       console.error('Error syncing to cloud:', error);

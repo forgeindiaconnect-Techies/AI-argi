@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Filter, BarChart2, PieChart, Users, Map, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import api from '../../config/api';
+import { API_BASE_URL } from '../../config/api';
 
 // Remove hardcoded static arrays, will replace with state.
 
@@ -13,8 +13,10 @@ const ReportsAnalyticsTab = () => {
   const fetchSyncData = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/api/sync');
-      setSyncData(res.data);
+      const res = await fetch(`${API_BASE_URL}/api/sync`);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      setSyncData(data);
     } catch (error) {
       console.error('Error fetching synced data:', error);
       // Fallback to local storage if API fails
