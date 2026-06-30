@@ -116,9 +116,6 @@ const SoilWeatherTab = () => {
               : <span className="text-amber-600 font-medium">Showing sample data. User dashboard will auto-sync when visited.</span>}
           </p>
         </div>
-        <button onClick={loadData} className="btn-outline flex items-center gap-2 text-sm">
-          <RefreshCw className="w-4 h-4" /> Refresh
-        </button>
       </div>
 
       {/* Sub-tabs */}
@@ -366,7 +363,6 @@ const SoilWeatherTab = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold">Active Warnings ({alerts.length})</h3>
-            <button className="btn-primary text-sm flex items-center gap-1"><Plus className="w-4 h-4" /> Broadcast Alert</button>
           </div>
           {alerts.length === 0 ? (
             <div className="card p-8 text-center text-gray-500">
