@@ -182,11 +182,11 @@ const ChatbotTab = ({ activeFarm }) => {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+      const response = await fetch(`${API_BASE_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          message: `Respond strictly and fluently in ${language}. Farm context: District=${activeFarm?.district || 'Unknown'}, Soil=${activeFarm?.soil || 'Unknown'}. User asked: ${input}`,
+          question: `Farm context: District=${activeFarm?.district || 'Unknown'}, Soil=${activeFarm?.soil || 'Unknown'}. User asked: ${input}`,
           language: language
         })
       });
@@ -197,7 +197,7 @@ const ChatbotTab = ({ activeFarm }) => {
       
       const aiResponse = {
         sender: 'ai',
-        text: data.reply || getLocalAIResponse(input, language),
+        text: data.answer || getLocalAIResponse(input, language),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiResponse]);
