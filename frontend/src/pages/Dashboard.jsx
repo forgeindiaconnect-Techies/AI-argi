@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sun, Sprout, ClipboardList, TrendingUp, Settings, LogOut, Bell, Droplets, User, FileText, BellRing, Beaker, Brain, DollarSign } from 'lucide-react';
+import { Leaf, Sun, Sprout, ClipboardList, TrendingUp, Settings, LogOut, Droplets, User, FileText, Beaker, Brain, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Import Tabs
@@ -10,7 +10,7 @@ import WeatherAnalysisTab from '../components/modules/WeatherAnalysisTab';
 import IrrigationMonitoringTab from '../components/modules/IrrigationMonitoringTab';
 import SoilAnalysisTab from '../components/modules/SoilAnalysisTab';
 import AiCropAdvisorTab from '../components/modules/AiCropAdvisorTab';
-import AlertsNotificationsTab from '../components/modules/AlertsNotificationsTab';
+
 import ReportsHistoryTab from '../components/modules/ReportsHistoryTab';
 import MarketValueEstimatorTab from '../components/modules/MarketValueEstimatorTab';
 import ChatbotTab from '../components/modules/ChatbotTab';
@@ -88,7 +88,6 @@ const Dashboard = () => {
     {
       title: 'System',
       items: [
-        { name: 'Notifications', icon: <BellRing className="w-5 h-5"/> },
         { name: 'Settings', icon: <Settings className="w-5 h-5"/> },
       ]
     }
@@ -142,13 +141,6 @@ const Dashboard = () => {
         <header className="h-16 bg-white/80 dark:bg-agri-bg-darkSurface/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 z-10">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">{activeTab}</h2>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setActiveTab('Notifications')}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-colors"
-            >
-              <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-800"></span>
-            </button>
             <div 
               onClick={() => setActiveTab('Settings')}
               className="w-10 h-10 rounded-full bg-gradient-to-br from-agri-green to-agri-green-dark flex items-center justify-center text-white font-bold cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
@@ -172,7 +164,7 @@ const Dashboard = () => {
             {activeTab === 'AgriAI Chat' && <ChatbotTab activeFarm={activeFarm} />}
             {activeTab === 'Reports & History' && <ReportsHistoryTab activeFarm={activeFarm} />}
             {activeTab === 'Market Value Estimator' && <MarketValueEstimatorTab activeFarm={activeFarm} />}
-            {activeTab === 'Notifications' && <AlertsNotificationsTab activeFarm={activeFarm} />}
+
             {activeTab === 'Settings' && <SettingsTab profileName={profileName} setProfileName={setProfileName} profileEmail={profileEmail} setProfileEmail={setProfileEmail} handleLogout={handleLogout} />}
           </div>
         </div>
