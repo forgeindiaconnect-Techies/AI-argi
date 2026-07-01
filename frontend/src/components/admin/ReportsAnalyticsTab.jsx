@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Filter, BarChart2, PieChart, Users, Map, RefreshCw } from 'lucide-react';
+import { FileText, Download, Filter, BarChart2, PieChart, Users, Map } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { API_BASE_URL } from '../../config/api';
 
@@ -225,9 +225,6 @@ const ReportsAnalyticsTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Reports & Analytics</h2>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={fetchSyncData} className="btn-outline flex items-center gap-2 text-sm bg-white dark:bg-gray-800">
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh Data
-          </button>
           <div className="flex gap-2 flex-1 sm:flex-none">
             <button onClick={() => handleDownload('pdf')} className="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-2 text-sm">
               <Download className="w-4 h-4"/> PDF

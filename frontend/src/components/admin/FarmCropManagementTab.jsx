@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Map, Sprout, Leaf, MapPin, Target, Calendar, CheckCircle, Clock, X, RefreshCw, AlertCircle } from 'lucide-react';
+import { Map, Sprout, Leaf, MapPin, Target, Calendar, CheckCircle, Clock, X, AlertCircle } from 'lucide-react';
 
 const FARMS_KEY = 'sams_farms';
 
@@ -95,12 +95,6 @@ const FarmCropManagementTab = () => {
             Showing <span className="font-semibold text-agri-green">{farms.length}</span> farm(s) registered by users.
           </p>
         </div>
-        <button
-          onClick={loadFarms}
-          className="btn-outline flex items-center gap-2 text-sm"
-        >
-          <RefreshCw className="w-4 h-4" /> Refresh Data
-        </button>
       </div>
 
       {/* Tabs */}
