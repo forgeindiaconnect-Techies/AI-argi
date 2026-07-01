@@ -96,10 +96,10 @@ const OverviewTab = ({ activeFarm, setActiveTab }) => {
     if (stored.length > 0) {
       const formattedStored = stored.slice(0, 4).map((item, idx) => ({
         id: item.id || idx,
-        title: item.title,
-        message: item.message,
+        title: item.title || 'Notification',
+        message: item.message || '',
         time: idx === 0 ? 'Just now' : `${idx * 25} mins ago`,
-        type: item.title.includes('Farm') ? 'farm' : 'ai'
+        type: item.title?.includes('Farm') ? 'farm' : 'ai'
       }));
       setActivities(formattedStored);
     } else {
